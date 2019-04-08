@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "type": "antlr-debug",
+            "request": "launch",
+            "name": "Debug Current Grammar",
+            "input": "input.txt",
+            "startRule": "channel",
+            "visualParseTree": true
+        }
+    ]
+}
