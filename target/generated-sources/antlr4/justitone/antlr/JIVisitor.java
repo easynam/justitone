@@ -1,4 +1,4 @@
-// Generated from JI.g4 by ANTLR 4.7.2
+// Generated from justitone/antlr/JI.g4 by ANTLR 4.7.2
 package justitone.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
