@@ -50,9 +50,6 @@ public class Reader {
 			Fraction length = ctx.length == null? Fraction.ONE : ctx.length.accept(fractionVisitor);
 			Fraction ratio = ctx.pitch().accept(pitchVisitor);
 			
-			System.out.println(length);
-			System.out.println(ratio);
-			
     		return (t -> t.addNote(ratio, length));
     	}
 		

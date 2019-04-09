@@ -29,6 +29,6 @@ event: (length=fraction)? pitch  #eventNote
      ;
      
      
-sequence : LABEL ':' WS* (event WS+)* event ;
+sequence : LABEL ':' WS* (event WS+)* event EOF;
 
 WS : [ \t\r\n]+ ;

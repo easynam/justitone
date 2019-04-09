@@ -27,12 +27,23 @@ public class Main extends JPanel {
 	    		   Playback.play(reader.parse(textArea.getText()));
 	    	   }
 	    	   catch (Exception e) {
-	    		   
+	    		   e.printStackTrace(System.out);
 	    	   }
+	       });
+	       
+	       JButton save = new JButton("save");
+	       save.addActionListener(a -> { 
+	    	   try {
+	    		   Playback.save(reader.parse(textArea.getText()));
+	    	   }
+	    	   catch (Exception e) {
+	    		   e.printStackTrace(System.out);
+		       }
 	       });
 	       
 	       setLayout(new BorderLayout());
 	       add(BorderLayout.SOUTH, play);
+	       add(BorderLayout.NORTH, save);
 	       add(BorderLayout.CENTER, textArea);
 	}
     
