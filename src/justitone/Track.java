@@ -20,6 +20,7 @@ public class Track {
 	
 	public void holdNote(Fraction length) {
 		Note n = notes.get(notes.size() - 1);
+		notes.remove(notes.size() -1);
 		
 		notes.add(new Note(n.offset, n.length.add(length)));
 	}

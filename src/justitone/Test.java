@@ -4,12 +4,11 @@ import javax.sound.sampled.LineUnavailableException;
 
 import justitone.parser.Reader;
 
-public class Main {
-
+public class Test {
 	public static void main(String[] args) throws LineUnavailableException {
 		Reader reader = new Reader();
 		
-		Track channel = reader.parse("c1: [:3:2 - _ :2 - _ :3 _]");
+		Track channel = reader.parse("c1: [:1 ^:1/2 - _ :2 - _ :3 _]");
 		
 		for (Note note : channel.notes) {
 			System.out.println(note);
@@ -17,5 +16,4 @@ public class Main {
 		
 		Playback.play(channel);
 	}
-
 }

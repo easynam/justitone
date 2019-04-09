@@ -20,8 +20,8 @@ public class Reader {
 	final PitchVisitor pitchVisitor = new PitchVisitor();
 	final IntegerVisitor integerVisitor = new IntegerVisitor();
 	
-	public Track parse(String someLangSourceCode) {
-		CharStream charStream = CharStreams.fromString(someLangSourceCode);
+	public Track parse(String source) {
+		CharStream charStream = CharStreams.fromString(source);
 		JILexer lexer = new JILexer(charStream);
 		TokenStream tokens = new CommonTokenStream(lexer);
 		JIParser parser = new JIParser(tokens);
