@@ -25,7 +25,7 @@ event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? REST   #eventRest
      | (length=fraction)? MINUS  #eventHold
      | (length=fraction)? OPEN_TUPLE WS* (event WS+)* event WS* CLOSE_TUPLE #eventTuple
-     | MOD ratio=fraction        #eventModulation
+     | MOD pitch                 #eventModulation
      ;
      
      

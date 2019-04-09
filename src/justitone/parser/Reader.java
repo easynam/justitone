@@ -87,7 +87,7 @@ public class Reader {
 		
 		@Override
     	public Consumer<Track> visitEventModulation(JIParser.EventModulationContext ctx) {
-			Fraction ratio = ctx.ratio.accept(fractionVisitor);
+			Fraction ratio = ctx.pitch().accept(pitchVisitor);
 			
     		return (t -> t.changeRoot(ratio));
     	}
