@@ -18,6 +18,7 @@ angle: signed;
 
 pitch: ':' ratio=fraction #pitchRatio
      | '>' angle          #pitchAngle
+     | pitch pitch+        #pitchMultiple
      ;
      
 event: (length=fraction)? pitch  #eventNote

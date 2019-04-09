@@ -96,18 +96,21 @@ public class Reader {
 	class PitchVisitor extends JIBaseVisitor<Fraction> {
 		@Override
     	public Fraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
-			System.out.println("here");
 			return ctx.ratio.accept(fractionVisitor);
     	}
 		
 		@Override
     	public Fraction visitPitchAngle(JIParser.PitchAngleContext ctx) {
-			System.out.println("no here");
 			int angle = ctx.angle().accept(integerVisitor);
 			
 			if(angle > 0)
 			  return new Fraction(180, 180-angle);
 			return new Fraction(180+angle, 180);
+    	}
+		
+		@Override
+    	public Fraction visitPitchMultiple(JIParser.PitchMultipleContext ctx) {
+			return ctx.pitch().stream().map(p -> p.accept(pitchVisitor)).reduce(Fraction::multiply).get();
     	}
 	}
 	
