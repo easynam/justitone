@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
-import org.apache.commons.math3.fraction.Fraction;
+import org.apache.commons.math3.fraction.BigFraction;
 
 import justitone.Track;
 import justitone.antlr.JIBaseVisitor;
@@ -47,29 +47,29 @@ public class Reader {
 	class EventVisitor extends JIBaseVisitor<Consumer<Track>> {
 		@Override
     	public Consumer<Track> visitEventNote(JIParser.EventNoteContext ctx) {
-			Fraction length = ctx.length == null? Fraction.ONE : ctx.length.accept(fractionVisitor);
-			Fraction ratio = ctx.pitch().accept(pitchVisitor);
+			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
+			BigFraction ratio = ctx.pitch().accept(pitchVisitor);
 			
     		return (t -> t.addNote(ratio, length));
     	}
 		
 		@Override
     	public Consumer<Track> visitEventRest(JIParser.EventRestContext ctx) {
-			Fraction length = ctx.length == null? Fraction.ONE : ctx.length.accept(fractionVisitor);
+			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-    		return (t -> t.addNote(Fraction.ZERO, length));
+    		return (t -> t.addNote(BigFraction.ZERO, length));
     	}
 
 		@Override
     	public Consumer<Track> visitEventHold(JIParser.EventHoldContext ctx) {
-			Fraction length = ctx.length == null? Fraction.ONE : ctx.length.accept(fractionVisitor);
+			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
     		return (t -> t.holdNote(length));
     	}
 		
 		@Override
     	public Consumer<Track> visitEventTuple(JIParser.EventTupleContext ctx) {
-			Fraction length = ctx.length == null? Fraction.ONE : ctx.length.accept(fractionVisitor);
+			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 			
     	    return (track -> {
     			Track tuple = new Track();
@@ -84,36 +84,36 @@ public class Reader {
 		
 		@Override
     	public Consumer<Track> visitEventModulation(JIParser.EventModulationContext ctx) {
-			Fraction ratio = ctx.pitch().accept(pitchVisitor);
+			BigFraction ratio = ctx.pitch().accept(pitchVisitor);
 			
     		return (t -> t.changeRoot(ratio));
     	}
 	}
 
-	class PitchVisitor extends JIBaseVisitor<Fraction> {
+	class PitchVisitor extends JIBaseVisitor<BigFraction> {
 		@Override
-    	public Fraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
+    	public BigFraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
 			return ctx.ratio.accept(fractionVisitor);
     	}
 		
 		@Override
-    	public Fraction visitPitchAngle(JIParser.PitchAngleContext ctx) {
+    	public BigFraction visitPitchAngle(JIParser.PitchAngleContext ctx) {
 			int angle = ctx.angle().accept(integerVisitor);
 			
 			if(angle > 0)
-			  return new Fraction(180, 180-angle);
-			return new Fraction(180+angle, 180);
+			  return new BigFraction(180, 180-angle);
+			return new BigFraction(180+angle, 180);
     	}
 		
 		@Override
-    	public Fraction visitPitchMultiple(JIParser.PitchMultipleContext ctx) {
-			return ctx.pitch().stream().map(p -> p.accept(pitchVisitor)).reduce(Fraction::multiply).get();
+    	public BigFraction visitPitchMultiple(JIParser.PitchMultipleContext ctx) {
+			return ctx.pitch().stream().map(p -> p.accept(pitchVisitor)).reduce(BigFraction::multiply).get();
     	}
 	}
 	
-	class FractionVisitor extends JIBaseVisitor<Fraction> {
+	class FractionVisitor extends JIBaseVisitor<BigFraction> {
 		@Override
-    	public Fraction visitFraction(JIParser.FractionContext ctx) {
+    	public BigFraction visitFraction(JIParser.FractionContext ctx) {
 			int numerator = integerVisitor.visit(ctx.integer(0));
 			int denominator = 1;
 			
@@ -121,7 +121,7 @@ public class Reader {
 				denominator = integerVisitor.visit(ctx.integer(1));
 			}
 			
-			return new Fraction(numerator, denominator);
+			return new BigFraction(numerator, denominator);
     	}
 	}
 	

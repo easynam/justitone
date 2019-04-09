@@ -2,15 +2,14 @@ package justitone;
 
 import java.nio.ByteBuffer;
 
-import org.apache.commons.math3.fraction.Fraction;
-
+import org.apache.commons.math3.fraction.BigFraction;
 public class Note {
     static final int fs = 44100;
     
-	Fraction offset;
-    Fraction length;
+	BigFraction offset;
+	BigFraction length;
 
-    public Note(Fraction offset, Fraction length) {
+    public Note(BigFraction offset, BigFraction length) {
     	this.offset = offset;
     	this.length = length;
     }
