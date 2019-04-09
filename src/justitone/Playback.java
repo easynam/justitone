@@ -24,6 +24,6 @@ public class Playback {
 	}
 
 	private static void play(SourceDataLine line, Note Note) {
-		line.write(Note.sin(), 0, Note.samples*2);
+		line.write(Note.sin(), 0, Note.samples()*2);
 	}
 }

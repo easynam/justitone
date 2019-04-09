@@ -4,13 +4,30 @@ DIGIT: [0-9];
 LABEL: [a-zA-Z][a-zA-Z0-9_]*;
 
 MOD: '^';
+REST: '_';
+MINUS: '-';
+OPEN_TUPLE: '[';
+CLOSE_TUPLE: ']';
 
 integer: DIGIT+;
+signed: MINUS? integer;
+
 fraction: integer ('/' integer)?;
 
-event: length=fraction ':' ratio=fraction WS* #note
-     | MOD ratio=fraction WS* #modulation;
+angle: signed;
 
-sequence : LABEL '>' WS* event+ WS*;
+pitch: ':' ratio=fraction #pitchRatio
+     | '>' angle          #pitchAngle
+     ;
+     
+event: (length=fraction)? pitch  #eventNote
+     | (length=fraction)? REST   #eventRest
+     | (length=fraction)? MINUS  #eventHold
+     | (length=fraction)? OPEN_TUPLE WS* (event WS+)* event WS* CLOSE_TUPLE #eventTuple
+     | MOD ratio=fraction        #eventModulation
+     ;
+     
+     
+sequence : LABEL ':' WS* (event WS+)* event ;
 
-WS : [ \t\r\n]+ -> skip;
+WS : [ \t\r\n]+ ;
