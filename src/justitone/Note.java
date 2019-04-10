@@ -14,10 +14,10 @@ public class Note {
     	this.length = length;
     }
     
-    public byte[] sin() {
+    public byte[] sin(int tempo) {
     	float freq = offset.floatValue()*440f;
     	
-    	int samples = samples();
+    	int samples = samples(tempo);
     	
     	ByteBuffer buffer = ByteBuffer.allocate(samples * 2);
     	
@@ -32,8 +32,8 @@ public class Note {
         return buffer.array();
     }
     
-    public int samples() {
-    	return (int) (length.doubleValue() * fs);
+    public int samples(int tempo) {
+    	return (int) (length.doubleValue() * fs * (240f/tempo));
     }
 
 	@Override

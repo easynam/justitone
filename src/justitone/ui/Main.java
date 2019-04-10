@@ -18,7 +18,7 @@ public class Main extends JPanel {
 	JButton play;
 	
 	public Main(Reader reader) {
-	       textArea = new JTextArea("instrument: [>0 >20 >36 >60 >90 - _ >20] >0");
+	       textArea = new JTextArea("120: [>0 >20 >36 >60 >90 - _ >20] >0");
 	       textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 	       
 	       play = new JButton("Play");

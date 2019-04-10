@@ -10,8 +10,12 @@ public class Track {
 	
 	public BigFraction baseOffset = BigFraction.ONE;
 	
-	public Track() {
+	public int tempo;
+	
+	public Track(int tempo) {
 		this.notes = new ArrayList<>();
+		
+		this.tempo = tempo;
 	}
 	
 	public void addNote(BigFraction offset, BigFraction length) {

@@ -34,7 +34,9 @@ public class Reader {
 	class SequenceVisitor extends JIBaseVisitor<Track> {
 		@Override
 		public Track visitSequence(JIParser.SequenceContext ctx) {
-			Track track = new Track();
+			int tempo = ctx.tempo.accept(integerVisitor);
+			
+			Track track = new Track(tempo);
 			
 			ctx.event().stream()
 					   .map(event -> event.accept(eventVisitor))
@@ -72,7 +74,7 @@ public class Reader {
 			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 			
     	    return (track -> {
-    			Track tuple = new Track();
+    			Track tuple = new Track(0);
 
     			ctx.event().stream()
     					   .map(event -> event.accept(eventVisitor))

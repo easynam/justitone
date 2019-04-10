@@ -28,7 +28,7 @@ event: (length=fraction)? pitch  #eventNote
      | MOD pitch                 #eventModulation
      ;
      
-     
-sequence : LABEL ':' WS* (event WS+)* event EOF;
+sequence : tempo=integer ':' WS+ (event WS+)* event EOF;
 
 WS : [ \t\r\n]+ ;
+
