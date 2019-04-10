@@ -9,6 +9,7 @@ MINUS: '-';
 OPEN_TUPLE: '[';
 CLOSE_TUPLE: ']';
 REPEAT: '*';
+PLUS: '+';
 
 integer: DIGIT+;
 signed: MINUS? integer;
@@ -19,7 +20,8 @@ angle: signed;
 
 pitch: ':' ratio=fraction #pitchRatio
      | '>' angle          #pitchAngle
-     | pitch pitch+        #pitchMultiple
+     | pitch pitch+       #pitchMultiple
+     | pitch PLUS+         #pitchPower
      ;
      
 event: (length=fraction)? pitch  #eventNote

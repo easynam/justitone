@@ -123,6 +123,12 @@ public class Reader {
     	public BigFraction visitPitchMultiple(JIParser.PitchMultipleContext ctx) {
 			return ctx.pitch().stream().map(p -> p.accept(pitchVisitor)).reduce(BigFraction::multiply).get();
     	}
+		
+		@Override
+    	public BigFraction visitPitchPower(JIParser.PitchPowerContext ctx) {
+			BigFraction pitch = ctx.pitch().accept(pitchVisitor);
+			return pitch.pow(ctx.PLUS().size() + 1);
+    	}
 	}
 	
 	class FractionVisitor extends JIBaseVisitor<BigFraction> {
