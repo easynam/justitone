@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public class Track {
-    List<Note> notes;
+    public List<Note> notes;
 
     public BigFraction baseOffset = BigFraction.ONE;
 

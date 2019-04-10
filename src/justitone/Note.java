@@ -7,8 +7,8 @@ import org.apache.commons.math3.fraction.BigFraction;
 public class Note {
     static final int fs = 44100;
 
-    BigFraction offset;
-    BigFraction length;
+    public BigFraction offset;
+    public BigFraction length;
 
     public Note(BigFraction offset, BigFraction length) {
         this.offset = offset;
