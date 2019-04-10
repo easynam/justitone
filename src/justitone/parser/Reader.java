@@ -38,15 +38,27 @@ public class Reader {
 			
 			Track track = new Track(tempo);
 			
-			ctx.event().stream()
-					   .map(event -> event.accept(eventVisitor))
-					   .forEach(f -> f.accept(track));
+			ctx.eventRepeat().stream()
+					         .map(event -> event.accept(eventVisitor))
+					         .forEach(f -> f.accept(track));
 			
 			return track;
 		}
 	}
 
 	class EventVisitor extends JIBaseVisitor<Consumer<Track>> {
+		public Consumer<Track> visitEventRepeat(JIParser.EventRepeatContext ctx) {
+			int repeats = ctx.repeats == null? 1 : ctx.repeats.accept(integerVisitor);
+			
+			Consumer<Track> event = ctx.event().accept(eventVisitor);
+			
+			return (t -> {
+				for (int i = 0; i < repeats; i++) {
+					event.accept(t);
+				}
+			});
+		}
+		
 		@Override
     	public Consumer<Track> visitEventNote(JIParser.EventNoteContext ctx) {
 			BigFraction length = ctx.length == null? BigFraction.ONE : ctx.length.accept(fractionVisitor);
@@ -76,9 +88,9 @@ public class Reader {
     	    return (track -> {
     			Track tuple = new Track(0);
 
-    			ctx.event().stream()
-    					   .map(event -> event.accept(eventVisitor))
-    					   .forEach(f -> f.accept(tuple));
+    			ctx.eventRepeat().stream()
+    					         .map(event -> event.accept(eventVisitor))
+    					         .forEach(f -> f.accept(tuple));
     			
     			track.addTuple(tuple, length);
     	    });

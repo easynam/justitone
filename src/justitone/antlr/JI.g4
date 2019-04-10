@@ -8,6 +8,7 @@ REST: '_';
 MINUS: '-';
 OPEN_TUPLE: '[';
 CLOSE_TUPLE: ']';
+REPEAT: '*';
 
 integer: DIGIT+;
 signed: MINUS? integer;
@@ -24,11 +25,13 @@ pitch: ':' ratio=fraction #pitchRatio
 event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? REST   #eventRest
      | (length=fraction)? MINUS  #eventHold
-     | (length=fraction)? OPEN_TUPLE WS* (event WS+)* event WS* CLOSE_TUPLE #eventTuple
+     | (length=fraction)? OPEN_TUPLE WS* (eventRepeat WS+)* eventRepeat WS* CLOSE_TUPLE #eventTuple
      | MOD pitch                 #eventModulation
      ;
      
-sequence : tempo=integer ':' WS+ (event WS+)* event EOF;
+eventRepeat: event (REPEAT repeats=integer)?;
+     
+sequence : tempo=integer ':' WS+ (eventRepeat WS+)* eventRepeat EOF;
 
 WS : [ \t\r\n]+ ;
 
