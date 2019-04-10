@@ -26,13 +26,23 @@ public class JidiTrack {
                 if (noteOn) {
                     events.add(new JidiEvent.NoteOff(tick));
                 }
+                
+                noteOn = false;
             }
             else {
+                noteOn = true;
+                
                 float freq = n.offset.floatValue() * 440f;
                 
                 events.add(new JidiEvent.NoteOn(tick));
                 events.add(new JidiEvent.Pitch(tick, freq));
             }
+            
+            currentPos = currentPos.add(n.length);
+        }
+        
+        for (JidiEvent e : events) {
+            System.out.println(e);
         }
     }
 }
