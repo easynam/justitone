@@ -37,6 +37,9 @@ public class MidiUI extends JPanel {
 
         JButton play = new JButton("Play");
         play.addActionListener(a -> {
+            // queue.add(new Message.SetTrack(reader.parse(textArea.getText())));
+            // queue.add(new Message.Play());
+
             play.setEnabled(false);
             try {
                 Song song = reader.parse(textArea.getText());
@@ -93,6 +96,18 @@ public class MidiUI extends JPanel {
 
             play.setEnabled(true);
         });
+        JButton stop = new JButton("Stop");
+        stop.addActionListener(a -> {
+            try {
+                queue.add(new Message.Stop());
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+        });
+        JSplitPane transport = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, play, stop);
+        transport.setEnabled(false);
+        transport.setResizeWeight(.5d);
+        transport.setDividerSize(0);
 
         JButton save = new JButton("save");
         save.addActionListener(a -> {
@@ -113,7 +128,7 @@ public class MidiUI extends JPanel {
         });
 
         setLayout(new BorderLayout());
-        add(BorderLayout.SOUTH, play);
+        add(BorderLayout.SOUTH, transport);
         add(BorderLayout.NORTH, save);
         add(BorderLayout.CENTER, textArea);
     }
