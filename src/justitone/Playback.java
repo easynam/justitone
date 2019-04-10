@@ -21,29 +21,29 @@ public class Playback {
 
         line.open(af, fs);
         line.start();
-        
+
         for (Note note : channel.notes) {
-            play (line, note, channel.tempo);
+            play(line, note, channel.tempo);
         }
-        
+
         line.drain();
         line.close();
     }
-    
+
     public static void save(Track channel) throws IOException {
         int length = channel.notes.stream().mapToInt(n -> n.samples(channel.tempo) * 2).sum();
-        
+
         ByteBuffer buffer = ByteBuffer.allocate(length);
-        
+
         channel.notes.stream().forEach(n -> buffer.put(n.sin(channel.tempo)));
-        
+
         final AudioFormat af = new AudioFormat(fs, 16, 1, true, true);
-        AudioInputStream inputStream = new AudioInputStream(new ByteArrayInputStream(buffer.array()),af,length);
+        AudioInputStream inputStream = new AudioInputStream(new ByteArrayInputStream(buffer.array()), af, length);
 
         AudioSystem.write(inputStream, AudioFileFormat.Type.WAVE, new File("justitone output.wav"));
     }
 
     private static void play(SourceDataLine line, Note Note, int tempo) {
-        line.write(Note.sin(tempo), 0, Note.samples(tempo)*2);
+        line.write(Note.sin(tempo), 0, Note.samples(tempo) * 2);
     }
 }
