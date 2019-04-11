@@ -8,7 +8,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import justitone.Playback;
 import justitone.parser.Reader;
 
 public class Main extends JPanel {
@@ -24,7 +23,7 @@ public class Main extends JPanel {
         play = new JButton("Play");
         play.addActionListener(a -> {
             try {
-                Playback.play(reader.parse(textArea.getText()));
+                //Playback.play(reader.parse(textArea.getText()));
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
@@ -33,7 +32,7 @@ public class Main extends JPanel {
         JButton save = new JButton("save");
         save.addActionListener(a -> {
             try {
-                Playback.save(reader.parse(textArea.getText()));
+                //Playback.save(reader.parse(textArea.getText()));
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }

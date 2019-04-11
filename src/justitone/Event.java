@@ -105,6 +105,6 @@ public abstract class Event {
             this.ratio = ratio;
         }
 
-        BigFraction ratio;
+        public BigFraction ratio;
     }
 }
