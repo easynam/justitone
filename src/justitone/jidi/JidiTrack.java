@@ -5,13 +5,15 @@ import java.util.List;
 
 public class JidiTrack {
     public List<JidiEvent> events;
+    int id;
     
-    public JidiTrack() {
+    public JidiTrack(int id) {
         this.events = new ArrayList<>();
+        this.id = id;
     }
     
     public void add(JidiEvent e) {
-        System.out.println(e);
+        System.out.println("track "+id+":"+e);
         
         events.add(e);
     }

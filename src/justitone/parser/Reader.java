@@ -1,5 +1,7 @@
 package justitone.parser;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -10,6 +12,7 @@ import org.antlr.v4.runtime.TokenStream;
 import org.apache.commons.math3.fraction.BigFraction;
 
 import justitone.Event;
+import justitone.Event.SubSequence;
 import justitone.Sequence;
 import justitone.Song;
 import justitone.antlr.JIBaseVisitor;
@@ -19,6 +22,7 @@ import justitone.antlr.JIParser;
 public class Reader {
     final SongVisitor songVisitor = new SongVisitor();
     final SequenceVisitor sequenceVisitor = new SequenceVisitor();
+    final PolySequenceVisitor polySequenceVisitor = new PolySequenceVisitor();
     final EventRepeatVisitor eventRepeatVisitor = new EventRepeatVisitor();
     final EventVisitor eventVisitor = new EventVisitor();
     final FractionVisitor fractionVisitor = new FractionVisitor();
@@ -30,7 +34,7 @@ public class Reader {
         JILexer lexer = new JILexer(charStream);
         TokenStream tokens = new CommonTokenStream(lexer);
         JIParser parser = new JIParser(tokens);
-
+        
         Song traverseResult = songVisitor.visit(parser.song());
 
         return traverseResult;
@@ -58,7 +62,17 @@ public class Reader {
             return seq;
         }
     }
+
+    class PolySequenceVisitor extends JIBaseVisitor<List<Sequence>> {
+        @Override
+        public List<Sequence> visitPolySequence(JIParser.PolySequenceContext ctx) {
+            List<Sequence> sequences = ctx.sequence().stream()
+                                           .map(event -> event.accept(sequenceVisitor))
+                                           .collect(Collectors.toList());
     
+            return sequences;
+        }
+    }
     
     class EventRepeatVisitor extends JIBaseVisitor<Stream<Event>> {
         public Stream<Event> visitEventRepeat(JIParser.EventRepeatContext ctx) {
@@ -102,17 +116,25 @@ public class Reader {
         @Override
         public Event visitEventTuple(JIParser.EventTupleContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
-            Sequence seq = ctx.sequence().accept(sequenceVisitor);
+            List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
             
-            return new Event.Tuple(length, seq);
+            List<SubSequence> tuples = sequences.stream()
+                                                .map(s -> new Event.Tuple(length, s))
+                                                .collect(Collectors.toList());
+            
+            return new Event.Poly(tuples);
         }
 
         @Override
         public Event visitEventBar(JIParser.EventBarContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
-            Sequence seq = ctx.sequence().accept(sequenceVisitor);
+            List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
+
+            List<SubSequence> bars = sequences.stream()
+                                              .map(s -> new Event.Bar(length, s))
+                                              .collect(Collectors.toList());
             
-            return new Event.Bar(length, seq);
+            return new Event.Poly(bars);
         }
 
         @Override
@@ -122,7 +144,7 @@ public class Reader {
             return new Event.Modulation(ratio);
         }
     }
-
+    
     class PitchVisitor extends JIBaseVisitor<BigFraction> {
         @Override
         public BigFraction visitPitchRatio(JIParser.PitchRatioContext ctx) {

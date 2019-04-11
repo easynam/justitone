@@ -13,6 +13,8 @@ CLOSE_BAR: '}';
 REPEAT: '*';
 PLUS: '+';
 COLON: ':';
+COMMA: ',';
+ANGLE_BRACKET: '>';
 
 integer: DIGIT+;
 signed: MINUS? integer;
@@ -22,7 +24,7 @@ fraction: integer ('/' integer)?;
 angle: signed;
 
 pitch: COLON ratio=fraction #pitchRatio
-     | '>' angle          #pitchAngle
+     | ANGLE_BRACKET angle          #pitchAngle
      | pitch pitch+       #pitchMultiple
      | pitch PLUS+         #pitchPower
      ;
@@ -30,14 +32,16 @@ pitch: COLON ratio=fraction #pitchRatio
 event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? REST   #eventRest
      | (length=fraction)? MINUS  #eventHold
-     | (length=fraction)? OPEN_TUPLE sequence CLOSE_TUPLE #eventTuple
-     | (length=fraction)? OPEN_BAR sequence CLOSE_BAR     #eventBar
+     | (length=fraction)? OPEN_TUPLE polySequence CLOSE_TUPLE #eventTuple
+     | (length=fraction)? OPEN_BAR polySequence CLOSE_BAR     #eventBar
      | MOD pitch                 #eventModulation
      ;
      
 eventRepeat: event (REPEAT repeats=integer)?;
+
+polySequence: sequence (COMMA sequence)*;
      
-sequence : WS* (eventRepeat WS+)* eventRepeat WS*;
+sequence: WS* (eventRepeat WS+)* eventRepeat WS*;
 
 song: tempo=integer COLON WS* sequence EOF;
 

@@ -31,13 +31,23 @@ public class JidiSequence {
 
     public JidiTrack allocateTrack() {
         if (inUse.size() == tracks.size()) {
-            JidiTrack track = new JidiTrack();
+            JidiTrack track = new JidiTrack(tracks.size());
             tracks.add(track);
             return track;
         }
         else {
             return tracks.stream().filter(t -> !inUse.contains(t)).findFirst().get();
         }
+    }
+    
+    public List<JidiTrack> allocateTracks(int count) {
+        List<JidiTrack> tracks = new ArrayList<>();
+        
+        for (int i = 0; i < count; i++) {
+            tracks.add(allocateTrack());
+        }
+        
+        return tracks;
     }
 
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
@@ -63,12 +73,29 @@ public class JidiSequence {
             else if (e instanceof Event.Modulation) {
                 state = state.multiplyFreq(((Event.Modulation) e).ratio);
             }
-            else if (e instanceof Event.SubSequence) {
-                Event.SubSequence sub = (Event.SubSequence) e;
-                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), track);
+            else if (e instanceof Event.Poly) {
+                Event.Poly poly = (Event.Poly) e;
+                loadPoly(state, currentPos, noteOn, poly.sequences, track);
             }
 
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
+        }
+    }
+    
+    public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
+        loadSequence(state, currentPos, noteOn, subs.get(0).sequence(), track);
+        
+        if (subs.size() > 1) {
+            List<JidiTrack> allocated = allocateTracks(subs.size() - 1);
+            
+            inUse.addAll(allocated);
+            
+            for (int i = 1; i < subs.size(); i++) {
+                Event.SubSequence sub = subs.get(i);
+                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), allocated.get(i - 1));
+            }
+            
+            inUse.removeAll(allocated);
         }
     }
     

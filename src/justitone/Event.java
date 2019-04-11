@@ -1,5 +1,8 @@
 package justitone;
 
+import java.util.List;
+
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public abstract class Event {
@@ -7,9 +10,13 @@ public abstract class Event {
         return BigFraction.ZERO;
     }
     
-    public static interface SubSequence {
-        public Sequence sequence();
-        public BigFraction eventLength();
+    public static abstract class SubSequence extends Event {
+        public Sequence sequence() {
+            throw new NotImplementedException();
+        }
+        public BigFraction eventLength() {
+            throw new NotImplementedException();
+        }
     }
     
     public static class Note extends Event {
@@ -20,7 +27,8 @@ public abstract class Event {
 
         public BigFraction ratio;
         BigFraction length;
-        
+
+        @Override
         public BigFraction length() {
             return length;
         }
@@ -32,7 +40,8 @@ public abstract class Event {
         }
 
         BigFraction length;
-        
+
+        @Override
         public BigFraction length() {
             return length;
         }
@@ -45,14 +54,15 @@ public abstract class Event {
         }
 
         BigFraction length;
-        
+
+        @Override
         public BigFraction length() {
             return length;
         }
         
     }
     
-    public static class Tuple extends Event implements SubSequence {
+    public static class Tuple extends SubSequence {
         public Tuple(BigFraction length, Sequence sequence) {
             this.length = length;
             this.sequence = sequence;
@@ -60,7 +70,8 @@ public abstract class Event {
 
         BigFraction length;
         Sequence sequence;
-        
+
+        @Override
         public BigFraction length() {
             return length;
         }
@@ -76,7 +87,7 @@ public abstract class Event {
         }
     }
     
-    public static class Bar extends Event implements SubSequence {
+    public static class Bar extends SubSequence {
         public Bar(BigFraction eventLength, Sequence sequence) {
             this.eventLength = eventLength;
             this.sequence = sequence;
@@ -84,7 +95,8 @@ public abstract class Event {
 
         BigFraction eventLength;
         Sequence sequence;
-        
+
+        @Override
         public BigFraction length() {
             return sequence.length().multiply(eventLength);
         }
@@ -97,6 +109,18 @@ public abstract class Event {
         @Override
         public BigFraction eventLength() {
             return eventLength;
+        }
+    }
+    
+    public static class Poly extends Event {
+        public Poly(List<SubSequence> sequences) {
+            this.sequences = sequences;
+        }
+
+        public List<SubSequence> sequences;
+        
+        public BigFraction length() {
+            return sequences.stream().map(Event::length).max(Comparable::compareTo).get();
         }
     }
     
