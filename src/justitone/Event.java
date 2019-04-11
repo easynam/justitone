@@ -7,6 +7,11 @@ public abstract class Event {
         return BigFraction.ZERO;
     }
     
+    public static interface SubSequence {
+        public Sequence sequence();
+        public BigFraction eventLength();
+    }
+    
     public static class Note extends Event {
         public Note(BigFraction length, BigFraction ratio) {
             this.ratio = ratio;
@@ -47,35 +52,51 @@ public abstract class Event {
         
     }
     
-    public static class Tuple extends Event {
-        public Tuple(BigFraction length, Sequence track) {
+    public static class Tuple extends Event implements SubSequence {
+        public Tuple(BigFraction length, Sequence sequence) {
             this.length = length;
-            this.track = track;
+            this.sequence = sequence;
         }
 
         BigFraction length;
-        Sequence track;
+        Sequence sequence;
         
         public BigFraction length() {
             return length;
         }
-        
+
+        @Override
+        public Sequence sequence() {
+            return sequence;
+        }
+
+        @Override
+        public BigFraction eventLength() {
+            return length.divide(sequence.length());
+        }
     }
     
-    public static class Bar extends Event {
-        public Bar(BigFraction eventLength, Sequence track) {
+    public static class Bar extends Event implements SubSequence {
+        public Bar(BigFraction eventLength, Sequence sequence) {
             this.eventLength = eventLength;
-            this.track = track;
+            this.sequence = sequence;
         }
 
         BigFraction eventLength;
-        Sequence track;
+        Sequence sequence;
         
         public BigFraction length() {
-            return track.events.stream()
-                               .map(e -> e.length())
-                               .reduce(BigFraction::add)
-                               .orElse(BigFraction.ZERO);
+            return sequence.length().multiply(eventLength);
+        }
+
+        @Override
+        public Sequence sequence() {
+            return sequence;
+        }
+
+        @Override
+        public BigFraction eventLength() {
+            return eventLength;
         }
     }
     

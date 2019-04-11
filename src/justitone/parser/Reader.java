@@ -1,7 +1,7 @@
 package justitone.parser;
 
-import java.text.ParseException;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -17,6 +17,7 @@ import justitone.antlr.JIParser;
 
 public class Reader {
     final SequenceVisitor sequenceVisitor = new SequenceVisitor();
+    final EventRepeatVisitor eventRepeatVisitor = new EventRepeatVisitor();
     final EventVisitor eventVisitor = new EventVisitor();
     final FractionVisitor fractionVisitor = new FractionVisitor();
     final PitchVisitor pitchVisitor = new PitchVisitor();
@@ -41,33 +42,31 @@ public class Reader {
             Sequence seq = new Sequence(tempo);
             
             ctx.eventRepeat().stream()
-                             .map(event -> event.accept(eventVisitor))
+                             .flatMap(event -> event.accept(eventRepeatVisitor))
                              .forEach(e -> seq.addEvent(e));
 
             return seq;
         }
     }
-
-    class EventVisitor extends JIBaseVisitor<Event> {
-        public Event visitEventRepeat(JIParser.EventRepeatContext ctx) {
+    
+    
+    class EventRepeatVisitor extends JIBaseVisitor<Stream<Event>> {
+        public Stream<Event> visitEventRepeat(JIParser.EventRepeatContext ctx) {
             int repeats = ctx.repeats == null ? 1 : ctx.repeats.accept(integerVisitor);
 
             Event event = ctx.event().accept(eventVisitor);
 
-            if (repeats == 1) {
-                return event;
+            Builder<Event> b = Stream.builder();
+            
+            for (int i = 0; i < repeats; i++) {
+                b.accept(event);
             }
-            else {
-                Sequence seq = new Sequence(0);
-                
-                for (int i = 0; i < repeats; i++) {
-                    seq.addEvent(event);
-                }
-                
-                return new Event.Bar(BigFraction.ONE, seq);
-            }
+            
+            return b.build();
         }
+    }
 
+    class EventVisitor extends JIBaseVisitor<Event> {
         @Override
         public Event visitEventNote(JIParser.EventNoteContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
@@ -99,6 +98,7 @@ public class Reader {
             ctx.eventRepeat().stream()
                              .map(event -> event.accept(eventVisitor))
                              .forEach(e -> seq.addEvent(e));
+            
             
             return new Event.Tuple(length, seq);
         }

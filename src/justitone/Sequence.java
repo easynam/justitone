@@ -21,7 +21,18 @@ public class Sequence {
     public void addEvent(Event e) {
         events.add(e);
     }
-
+    
+    public BigFraction length() {
+        return events.stream()
+                     .map(e -> e.length())
+                     .reduce(BigFraction::add)
+                     .orElse(BigFraction.ZERO);
+    }
+    
+    public List<Event> contents() {
+        return events;
+    }
+    
 //    public void holdNote(BigFraction length) {
 //        Note n = events.get(events.size() - 1);
 //        events.remove(events.size() - 1);
