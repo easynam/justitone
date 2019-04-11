@@ -7,22 +7,26 @@ import org.apache.commons.math3.fraction.BigFraction;
 
 import justitone.Event;
 import justitone.Sequence;
+import justitone.Song;
 
 //java intonation digital interface
 public class JidiSequence {
     public List<JidiTrack> tracks;
     private List<JidiTrack> inUse;
 
-    final int ppm = 480 * 4;
+    public final int ppm = 480 * 4;
+    public final int bpm;
 
-    public JidiSequence(Sequence sequence) {
+    public JidiSequence(Song song) {
+        bpm = song.bpm;
+        
         tracks = new ArrayList<>();
         inUse = new ArrayList<>();
 
         JidiTrack track = allocateTrack();
         inUse.add(track);
 
-        loadSequence(new State(), BigFraction.ZERO, false, sequence, track);
+        loadSequence(new State(), BigFraction.ZERO, false, song.sequence, track);
     }
 
     public JidiTrack allocateTrack() {

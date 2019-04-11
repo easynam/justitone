@@ -12,6 +12,9 @@ local.properties
 
 target
 .classpath
+.vscode
+*.antlr
+input.txt
 
 # External tool builders
 .externalToolBuilders/

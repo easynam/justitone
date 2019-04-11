@@ -10,12 +10,8 @@ public class Sequence {
 
 //    public BigFraction baseOffset = BigFraction.ONE;
 
-    public int tempo;
-
-    public Sequence(int tempo) {
+    public Sequence() {
         this.events = new ArrayList<>();
-
-        this.tempo = tempo;
     }
 
     public void addEvent(Event e) {
