@@ -1,5 +1,6 @@
 package justitone.parser;
 
+import java.text.ParseException;
 import java.util.function.Consumer;
 
 import org.antlr.v4.runtime.CharStream;
@@ -8,7 +9,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import org.apache.commons.math3.fraction.BigFraction;
 
-import justitone.Track;
+import justitone.Event;
+import justitone.Sequence;
 import justitone.antlr.JIBaseVisitor;
 import justitone.antlr.JILexer;
 import justitone.antlr.JIParser;
@@ -20,96 +22,106 @@ public class Reader {
     final PitchVisitor pitchVisitor = new PitchVisitor();
     final IntegerVisitor integerVisitor = new IntegerVisitor();
 
-    public Track parse(String source) {
+    public Sequence parse(String source) {
         CharStream charStream = CharStreams.fromString(source);
         JILexer lexer = new JILexer(charStream);
         TokenStream tokens = new CommonTokenStream(lexer);
         JIParser parser = new JIParser(tokens);
 
-        Track traverseResult = sequenceVisitor.visit(parser.sequence());
+        Sequence traverseResult = sequenceVisitor.visit(parser.sequence());
 
         return traverseResult;
     }
 
-    class SequenceVisitor extends JIBaseVisitor<Track> {
+    class SequenceVisitor extends JIBaseVisitor<Sequence> {
         @Override
-        public Track visitSequence(JIParser.SequenceContext ctx) {
+        public Sequence visitSequence(JIParser.SequenceContext ctx) {
             int tempo = ctx.tempo.accept(integerVisitor);
 
-            Track track = new Track(tempo);
+            Sequence seq = new Sequence(tempo);
+            
+            ctx.eventRepeat().stream()
+                             .map(event -> event.accept(eventVisitor))
+                             .forEach(e -> seq.addEvent(e));
 
-            ctx.eventRepeat().stream().map(event -> event.accept(eventVisitor)).forEach(f -> f.accept(track));
-
-            return track;
+            return seq;
         }
     }
 
-    class EventVisitor extends JIBaseVisitor<Consumer<Track>> {
-        public Consumer<Track> visitEventRepeat(JIParser.EventRepeatContext ctx) {
+    class EventVisitor extends JIBaseVisitor<Event> {
+        public Event visitEventRepeat(JIParser.EventRepeatContext ctx) {
             int repeats = ctx.repeats == null ? 1 : ctx.repeats.accept(integerVisitor);
 
-            Consumer<Track> event = ctx.event().accept(eventVisitor);
+            Event event = ctx.event().accept(eventVisitor);
 
-            return (t -> {
+            if (repeats == 1) {
+                return event;
+            }
+            else {
+                Sequence seq = new Sequence(0);
+                
                 for (int i = 0; i < repeats; i++) {
-                    event.accept(t);
+                    seq.addEvent(event);
                 }
-            });
+                
+                return new Event.Bar(BigFraction.ONE, seq);
+            }
         }
 
         @Override
-        public Consumer<Track> visitEventNote(JIParser.EventNoteContext ctx) {
+        public Event visitEventNote(JIParser.EventNoteContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch().accept(pitchVisitor);
-
-            return (t -> t.addNote(ratio, length));
+            
+            return new Event.Note(length, ratio);
         }
 
         @Override
-        public Consumer<Track> visitEventRest(JIParser.EventRestContext ctx) {
+        public Event visitEventRest(JIParser.EventRestContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return (t -> t.addNote(BigFraction.ZERO, length));
+            return new Event.Rest(length);
         }
 
         @Override
-        public Consumer<Track> visitEventHold(JIParser.EventHoldContext ctx) {
+        public Event visitEventHold(JIParser.EventHoldContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return (t -> t.holdNote(length));
+            return new Event.Hold(length);
         }
 
         @Override
-        public Consumer<Track> visitEventTuple(JIParser.EventTupleContext ctx) {
+        public Event visitEventTuple(JIParser.EventTupleContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return (track -> {
-                Track tuple = new Track(0);
-
-                ctx.eventRepeat().stream().map(event -> event.accept(eventVisitor)).forEach(f -> f.accept(tuple));
-
-                track.addTuple(tuple, length);
-            });
+            Sequence seq = new Sequence(0);
+            
+            ctx.eventRepeat().stream()
+                             .map(event -> event.accept(eventVisitor))
+                             .forEach(e -> seq.addEvent(e));
+            
+            return new Event.Tuple(length, seq);
         }
 
         @Override
-        public Consumer<Track> visitEventBar(JIParser.EventBarContext ctx) {
+        public Event visitEventBar(JIParser.EventBarContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return (track -> {
-                Track bar = new Track(0);
 
-                ctx.eventRepeat().stream().map(event -> event.accept(eventVisitor)).forEach(f -> f.accept(bar));
-
-                track.addBar(bar, length);
-            });
+            Sequence seq = new Sequence(0);
+            
+            ctx.eventRepeat().stream()
+                             .map(event -> event.accept(eventVisitor))
+                             .forEach(e -> seq.addEvent(e));
+            
+            return new Event.Bar(length, seq);
         }
 
         @Override
-        public Consumer<Track> visitEventModulation(JIParser.EventModulationContext ctx) {
+        public Event visitEventModulation(JIParser.EventModulationContext ctx) {
             BigFraction ratio = ctx.pitch().accept(pitchVisitor);
 
-            return (t -> t.changeRoot(ratio));
+            return new Event.Modulation(ratio);
         }
     }
 
