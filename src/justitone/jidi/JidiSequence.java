@@ -1,7 +1,10 @@
 package justitone.jidi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.math3.fraction.BigFraction;
 
@@ -12,7 +15,7 @@ import justitone.Song;
 //java intonation digital interface
 public class JidiSequence {
     public List<JidiTrack> tracks;
-    private List<JidiTrack> inUse;
+    private Map<JidiTrack, Periods> used;
 
     public final int ppm = 480 * 4;
     public final int bpm;
@@ -21,35 +24,32 @@ public class JidiSequence {
         bpm = song.bpm;
         
         tracks = new ArrayList<>();
-        inUse = new ArrayList<>();
+        used = new HashMap<>();
 
-        JidiTrack track = allocateTrack();
-        inUse.add(track);
+        JidiTrack track = allocateTrack(BigFraction.ZERO, song.sequence.length());
 
         loadSequence(new State(), BigFraction.ZERO, false, song.sequence, track);
     }
 
-    public JidiTrack allocateTrack() {
-        if (inUse.size() == tracks.size()) {
-            JidiTrack track = new JidiTrack(tracks.size());
-            tracks.add(track);
+    public JidiTrack allocateTrack(BigFraction start, BigFraction end) {
+        Optional<JidiTrack> maybeTrack = used.keySet().stream()
+                                                      .filter(t -> used.get(t).canAllocate(start, end))
+                                                      .findFirst();
+        if (maybeTrack.isPresent()) {
+            JidiTrack track  = maybeTrack.get();
+            
+            used.get(track).allocate(start, end);
+            
             return track;
         }
         else {
-            return tracks.stream().filter(t -> !inUse.contains(t)).findFirst().get();
+            JidiTrack track = new JidiTrack(tracks.size());
+            tracks.add(track);
+            used.put(track, new Periods());
+            return track;
         }
     }
     
-    public List<JidiTrack> allocateTracks(int count) {
-        List<JidiTrack> tracks = new ArrayList<>();
-        
-        for (int i = 0; i < count; i++) {
-            tracks.add(allocateTrack());
-        }
-        
-        return tracks;
-    }
-
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
         for (Event e : sequence.contents()) {
             int tick = currentPos.multiply(ppm).intValue();
@@ -90,16 +90,13 @@ public class JidiSequence {
         loadSequence(state.multiplyLength(subs.get(0).eventLength()), currentPos, noteOn, subs.get(0).sequence(), track);
         
         if (subs.size() > 1) {
-            List<JidiTrack> allocated = allocateTracks(subs.size() - 1);
-            
-            inUse.addAll(allocated);
-            
             for (int i = 1; i < subs.size(); i++) {
                 Event.SubSequence sub = subs.get(i);
-                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), allocated.get(i - 1));
+                
+                BigFraction end = currentPos.add(sub.length());
+                
+                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), allocateTrack(currentPos, end));
             }
-            
-            inUse.removeAll(allocated);
         }
     }
     
