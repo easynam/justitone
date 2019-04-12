@@ -41,7 +41,7 @@ event: (length=fraction)? pitch  #eventNote
 polySequence: sequence (COMMA sequence)*;
      
 sequenceItem: event (REPEAT repeats=integer)?          #eventRepeat
-	        | (lengthMultiplier=fraction)? JUMP (times=integer)  #jump
+	        | (lengthMultiplier=fraction)? JUMP (times=integer)?  #jump
 	        ;
      
 sequence: WS* (sequenceItem WS+)* sequenceItem WS*;
