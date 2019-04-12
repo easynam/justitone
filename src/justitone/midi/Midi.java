@@ -72,6 +72,10 @@ public class Midi {
     private Track addTrack(Sequence seq, JidiTrack jidiTrack, float pitchBendRange, int channel) throws InvalidMidiDataException {
         Track track = seq.createTrack();
         
+        ShortMessage message = new ShortMessage();
+        message.setMessage(ShortMessage.PROGRAM_CHANGE | channel, 80, 0);
+        track.add(new MidiEvent(message, 0));
+        
         float freq = 440;
         
         boolean noteOn = false;
