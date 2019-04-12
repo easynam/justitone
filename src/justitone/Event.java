@@ -6,6 +6,13 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public abstract class Event {
+    public TokenPos tokenPos;
+    
+    public Event withTokenPos(TokenPos pos) {
+        this.tokenPos = pos;
+        return this;
+    }
+    
     public BigFraction length() {
         return BigFraction.ZERO;
     }

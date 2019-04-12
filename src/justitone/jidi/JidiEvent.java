@@ -1,7 +1,10 @@
 package justitone.jidi;
 
+import justitone.TokenPos;
+
 public abstract class JidiEvent {
-    int tick;
+    public int tick;
+    public TokenPos tokenPos;
     
     public static class NoteOn extends JidiEvent {
         @Override
@@ -9,8 +12,9 @@ public abstract class JidiEvent {
             return "NoteOn [tick=" + tick + "]";
         }
 
-        NoteOn(int pos) {
-            this.tick = pos;
+        NoteOn(int tick, TokenPos pos) {
+            this.tick = tick;
+            this.tokenPos = pos;
         }
     }
     
@@ -20,8 +24,9 @@ public abstract class JidiEvent {
             return "NoteOff [tick=" + tick + "]";
         }
 
-        NoteOff(int pos) {
-            this.tick = pos;
+        NoteOff(int tick, TokenPos pos) {
+            this.tick = tick;
+            this.tokenPos = pos;
         }
     }
     
@@ -33,9 +38,17 @@ public abstract class JidiEvent {
 
         float freq;
         
-        Pitch(int pos, float freq) {
-            this.tick = pos;
+        Pitch(int tick, float freq, TokenPos pos) {
+            this.tick = tick;
             this.freq = freq;
+            this.tokenPos = pos;
+        }
+    }
+    
+    public static class Empty extends JidiEvent {
+        Empty(int tick, TokenPos pos) {
+            this.tick = tick;
+            this.tokenPos = pos;
         }
     }
 }

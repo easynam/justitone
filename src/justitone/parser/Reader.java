@@ -3,12 +3,11 @@ package justitone.parser;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.Stream.Builder;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.apache.commons.math3.fraction.BigFraction;
 
@@ -16,6 +15,7 @@ import justitone.Event;
 import justitone.Event.SubSequence;
 import justitone.Sequence;
 import justitone.Song;
+import justitone.TokenPos;
 import justitone.antlr.JIBaseVisitor;
 import justitone.antlr.JILexer;
 import justitone.antlr.JIParser;
@@ -39,6 +39,10 @@ public class Reader {
         Song traverseResult = songVisitor.visit(parser.song());
 
         return traverseResult;
+    }
+    
+    public static TokenPos tokenPos(ParserRuleContext ctx) {
+        return new TokenPos(ctx.start.getStartIndex(), ctx.stop.getStopIndex());
     }
 
     class SongVisitor extends JIBaseVisitor<Song> {
@@ -111,21 +115,21 @@ public class Reader {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch().accept(pitchVisitor);
             
-            return new Event.Note(length, ratio);
+            return new Event.Note(length, ratio).withTokenPos(tokenPos(ctx));
         }
 
         @Override
         public Event visitEventRest(JIParser.EventRestContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return new Event.Rest(length);
+            return new Event.Rest(length).withTokenPos(tokenPos(ctx));
         }
 
         @Override
         public Event visitEventHold(JIParser.EventHoldContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
 
-            return new Event.Hold(length);
+            return new Event.Hold(length).withTokenPos(tokenPos(ctx));
         }
 
         @Override
@@ -156,7 +160,7 @@ public class Reader {
         public Event visitEventModulation(JIParser.EventModulationContext ctx) {
             BigFraction ratio = ctx.pitch().accept(pitchVisitor);
 
-            return new Event.Modulation(ratio);
+            return new Event.Modulation(ratio).withTokenPos(tokenPos(ctx));
         }
     }
     

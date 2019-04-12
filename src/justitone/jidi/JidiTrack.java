@@ -5,7 +5,7 @@ import java.util.List;
 
 public class JidiTrack {
     public List<JidiEvent> events;
-    int id;
+    public int id;
     
     public JidiTrack(int id) {
         this.events = new ArrayList<>();
