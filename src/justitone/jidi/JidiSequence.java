@@ -105,7 +105,6 @@ public class JidiSequence {
         final BigFraction freqMultiplier;
         
         public State(BigFraction lengthMultiplier, BigFraction freqMultiplier) {
-            System.out.println("length "+lengthMultiplier+ " freq "+freqMultiplier);
             this.lengthMultiplier = lengthMultiplier;
             this.freqMultiplier = freqMultiplier;
         }
