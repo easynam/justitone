@@ -73,6 +73,10 @@ public class JidiSequence {
             else if (e instanceof Event.Modulation) {
                 state = state.multiplyFreq(((Event.Modulation) e).ratio);
             }
+            else if (e instanceof Event.SubSequence) {
+                Event.SubSequence sub = (Event.SubSequence) e;
+                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), track);
+            }
             else if (e instanceof Event.Poly) {
                 Event.Poly poly = (Event.Poly) e;
                 loadPoly(state, currentPos, noteOn, poly.sequences, track);

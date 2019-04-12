@@ -94,7 +94,11 @@ public class Reader {
 
             return (s -> {
                 for (int i = 0; i < repeats; i++) {
-                    s.addSelf();
+                    Sequence bar = new Sequence(s);
+                    
+                    s.addEvent(new Event.Bar(BigFraction.ONE, bar));
+                    
+                    s = bar;
                 }
             });
         }

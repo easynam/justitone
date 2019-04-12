@@ -6,21 +6,22 @@ import java.util.List;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public class Sequence {
+
     public List<Event> events;
 
 //    public BigFraction baseOffset = BigFraction.ONE;
 
     public Sequence() {
-        this.events = new ArrayList<>();
+        events = new ArrayList<>();
+    }
+    
+    public Sequence(Sequence sequence) {
+        events = new ArrayList<>();
+        events.addAll(sequence.events);
     }
 
     public void addEvent(Event e) {
         events.add(e);
-    }
-    
-
-    public void addSelf() {
-        events.addAll(events);
     }
     
     public BigFraction length() {
@@ -33,6 +34,7 @@ public class Sequence {
     public List<Event> contents() {
         return events;
     }
+    
     
 //    public void holdNote(BigFraction length) {
 //        Note n = events.get(events.size() - 1);
