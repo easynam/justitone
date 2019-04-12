@@ -87,7 +87,7 @@ public class JidiSequence {
     }
     
     public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
-        loadSequence(state, currentPos, noteOn, subs.get(0).sequence(), track);
+        loadSequence(state.multiplyLength(subs.get(0).eventLength()), currentPos, noteOn, subs.get(0).sequence(), track);
         
         if (subs.size() > 1) {
             List<JidiTrack> allocated = allocateTracks(subs.size() - 1);
@@ -108,6 +108,7 @@ public class JidiSequence {
         final BigFraction freqMultiplier;
         
         public State(BigFraction lengthMultiplier, BigFraction freqMultiplier) {
+            System.out.println("length "+lengthMultiplier+ " freq "+freqMultiplier);
             this.lengthMultiplier = lengthMultiplier;
             this.freqMultiplier = freqMultiplier;
         }
