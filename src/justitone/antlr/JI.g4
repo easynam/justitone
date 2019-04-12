@@ -26,23 +26,23 @@ fraction: num=integer ('/' den=integer)?
 angle: signed;
 
 pitch: COLON ratio=fraction #pitchRatio
-     | ANGLE_BRACKET angle          #pitchAngle
-     | pitch pitch+       #pitchMultiple
-     | pitch PLUS+         #pitchPower
+     | ANGLE_BRACKET angle  #pitchAngle
+     | pitch pitch+         #pitchMultiple
+     | pitch PLUS+          #pitchPower
      ;
      
 event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? REST   #eventRest
      | (length=fraction)? MINUS  #eventHold
-     | (length=fraction)? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple
-     | (lengthMultiplier=fraction)? OPEN_BAR polySequence CLOSE_BAR  #eventBar
+     | (length=fraction)? pitch? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple
+     | (lengthMultiplier=fraction)? pitch? OPEN_BAR polySequence CLOSE_BAR  #eventBar
      | MOD pitch                 #eventModulation
      ;
 
 polySequence: sequence (COMMA sequence)*;
      
-sequenceItem: event (REPEAT repeats=integer)?          #eventRepeat
-	        | (lengthMultiplier=fraction)? JUMP (times=integer)?  #jump
+sequenceItem: event (REPEAT repeats=integer)?                     #eventRepeat
+	        | (lengthMultiplier=fraction)? pitch? JUMP (times=integer)?  #jump
 	        ;
      
 sequence: WS* (sequenceItem WS+)* sequenceItem WS*;

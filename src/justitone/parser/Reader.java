@@ -95,13 +95,14 @@ public class Reader {
         
         public Consumer<Sequence> visitJump(JIParser.JumpContext ctx) {
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
             int repeats = ctx.times == null ? 1 : ctx.times.accept(integerVisitor);
 
             return (s -> {
                 for (int i = 0; i < repeats; i++) {
                     Sequence bar = new Sequence(s);
                     
-                    s.addEvent(new Event.Bar(length, bar));
+                    s.addEvent(new Event.Bar(length, ratio, bar));
                     
                     s = bar;
                 }
@@ -135,10 +136,11 @@ public class Reader {
         @Override
         public Event visitEventTuple(JIParser.EventTupleContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
             List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
             
             List<SubSequence> tuples = sequences.stream()
-                                                .map(s -> new Event.Tuple(length, s))
+                                                .map(s -> new Event.Tuple(length, ratio, s))
                                                 .collect(Collectors.toList());
             
             return new Event.Poly(tuples);
@@ -147,10 +149,11 @@ public class Reader {
         @Override
         public Event visitEventBar(JIParser.EventBarContext ctx) {
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
             List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
 
             List<SubSequence> bars = sequences.stream()
-                                              .map(s -> new Event.Bar(length, s))
+                                              .map(s -> new Event.Bar(length, ratio, s))
                                               .collect(Collectors.toList());
             
             return new Event.Poly(bars);

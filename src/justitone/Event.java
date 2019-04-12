@@ -18,6 +18,11 @@ public abstract class Event {
     }
     
     public static abstract class SubSequence extends Event {
+        BigFraction ratio;
+        
+        public BigFraction ratio() {
+            return ratio;
+        }
         public Sequence sequence() {
             throw new NotImplementedException();
         }
@@ -70,8 +75,9 @@ public abstract class Event {
     }
     
     public static class Tuple extends SubSequence {
-        public Tuple(BigFraction length, Sequence sequence) {
+        public Tuple(BigFraction length, BigFraction ratio, Sequence sequence) {
             this.length = length;
+            this.ratio = ratio;
             this.sequence = sequence;
         }
 
@@ -95,8 +101,9 @@ public abstract class Event {
     }
     
     public static class Bar extends SubSequence {
-        public Bar(BigFraction eventLength, Sequence sequence) {
+        public Bar(BigFraction eventLength, BigFraction ratio, Sequence sequence) {
             this.eventLength = eventLength;
+            this.ratio = ratio;
             this.sequence = sequence;
         }
 

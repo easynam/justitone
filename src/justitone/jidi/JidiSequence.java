@@ -82,7 +82,8 @@ public class JidiSequence {
             }
             else if (e instanceof Event.SubSequence) {
                 Event.SubSequence sub = (Event.SubSequence) e;
-                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), track);
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+                             currentPos, noteOn, sub.sequence(), track);
             }
             else if (e instanceof Event.Poly) {
                 Event.Poly poly = (Event.Poly) e;
@@ -94,15 +95,19 @@ public class JidiSequence {
     }
     
     public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
-        loadSequence(state.multiplyLength(subs.get(0).eventLength()), currentPos, noteOn, subs.get(0).sequence(), track);
+        Event.SubSequence sub = subs.get(0);
+        
+        loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+                     currentPos, noteOn, subs.get(0).sequence(), track);
         
         if (subs.size() > 1) {
             for (int i = 1; i < subs.size(); i++) {
-                Event.SubSequence sub = subs.get(i);
+                sub = subs.get(i);
                 
                 BigFraction end = currentPos.add(sub.length());
                 
-                loadSequence(state.multiplyLength(sub.eventLength()), currentPos, noteOn, sub.sequence(), allocateTrack(currentPos, end));
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+                             currentPos, noteOn, sub.sequence(), allocateTrack(currentPos, end));
             }
         }
     }

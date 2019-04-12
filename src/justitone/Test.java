@@ -9,7 +9,7 @@ public class Test {
     public static void main(String[] args) throws LineUnavailableException {
         Reader reader = new Reader();
 
-        Song song = reader.parse("120: :/1 :1 :/5 :2/5\n");
+        Song song = reader.parse("120: :400/440[>0 :2<7 >0]\n");
         
         new JidiSequence(song);
     }
