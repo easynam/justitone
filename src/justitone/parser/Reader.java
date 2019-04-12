@@ -90,13 +90,14 @@ public class Reader {
         }
         
         public Consumer<Sequence> visitJump(JIParser.JumpContext ctx) {
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
             int repeats = ctx.times == null ? 1 : ctx.times.accept(integerVisitor);
 
             return (s -> {
                 for (int i = 0; i < repeats; i++) {
                     Sequence bar = new Sequence(s);
                     
-                    s.addEvent(new Event.Bar(BigFraction.ONE, bar));
+                    s.addEvent(new Event.Bar(length, bar));
                     
                     s = bar;
                 }
@@ -141,7 +142,7 @@ public class Reader {
 
         @Override
         public Event visitEventBar(JIParser.EventBarContext ctx) {
-            BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
             List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
 
             List<SubSequence> bars = sequences.stream()
