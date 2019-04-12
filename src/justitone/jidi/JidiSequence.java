@@ -45,8 +45,10 @@ public class JidiSequence {
         }
         else {
             JidiTrack track = new JidiTrack(tracks.size());
+            Periods periods = new Periods();
+            periods.allocate(start, end);
             tracks.add(track);
-            used.put(track, new Periods());
+            used.put(track, periods);
             return track;
         }
     }
