@@ -20,7 +20,8 @@ JUMP: '<';
 integer: DIGIT+;
 signed: MINUS? integer;
 
-fraction: integer ('/' integer)?;
+fraction: num=integer ('/' den=integer)?
+        | '/' den=integer;
 
 angle: signed;
 

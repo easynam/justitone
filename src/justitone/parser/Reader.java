@@ -194,12 +194,8 @@ public class Reader {
     class FractionVisitor extends JIBaseVisitor<BigFraction> {
         @Override
         public BigFraction visitFraction(JIParser.FractionContext ctx) {
-            int numerator = integerVisitor.visit(ctx.integer(0));
-            int denominator = 1;
-
-            if (null != ctx.integer(1)) {
-                denominator = integerVisitor.visit(ctx.integer(1));
-            }
+            int numerator = ctx.num == null ? 1 : ctx.num.accept(integerVisitor);
+            int denominator = ctx.den == null ? 1 : ctx.den.accept(integerVisitor);
 
             return new BigFraction(numerator, denominator);
         }
