@@ -36,17 +36,29 @@ public class Main extends JPanel {
                 Midi midi = new Midi();
                 
                 Sequence midiSeq = midi.jidiToMidi(seq, 2f);
-                
+
                 Sequencer sequencer = MidiSystem.getSequencer();
                 if (sequencer == null) {
                     System.err.println("Sequencer device not supported");
                     return;
                 }
-                
-                sequencer.open(); // Open device
-                
+
                 sequencer.setSequence(midiSeq);
+                sequencer.open();
                 sequencer.start();
+                while(true) {
+                    if(sequencer.isRunning()) {
+                        try {
+                            Thread.sleep(100);
+                        } catch(InterruptedException ignore) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                sequencer.stop();
+                sequencer.close();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
