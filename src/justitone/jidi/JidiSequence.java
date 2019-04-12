@@ -17,11 +17,12 @@ public class JidiSequence {
     public List<JidiTrack> tracks;
     private Map<JidiTrack, Periods> used;
 
-    public final int ppm = 480 * 4;
+    public final int ppm;
     public final int bpm;
 
-    public JidiSequence(Song song) {
+    public JidiSequence(Song song, int ppq) {
         bpm = song.bpm;
+        ppm = ppq*4;
         
         tracks = new ArrayList<>();
         used = new HashMap<>();

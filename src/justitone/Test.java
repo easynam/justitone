@@ -11,6 +11,6 @@ public class Test {
 
         Song song = reader.parse("120: :400/440[>0 :2<7 >0]\n");
         
-        new JidiSequence(song);
+        new JidiSequence(song, 480);
     }
 }
