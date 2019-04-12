@@ -3,7 +3,7 @@ package justitone.jidi;
 import justitone.TokenPos;
 
 public abstract class JidiEvent {
-    public int tick;
+    public long tick;
     public TokenPos tokenPos;
     
     public static class NoteOn extends JidiEvent {
@@ -36,7 +36,7 @@ public abstract class JidiEvent {
             return "Pitch [freq=" + freq + ", tick=" + tick + "]";
         }
 
-        float freq;
+        public float freq;
         
         Pitch(int tick, float freq, TokenPos pos) {
             this.tick = tick;

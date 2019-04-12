@@ -52,7 +52,11 @@ public class JidiSequence {
     }
     
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
+        Event last = null;
+        
         for (Event e : sequence.contents()) {
+            last = e;
+            
             int tick = currentPos.multiply(ppm).intValue();
 
             if (e instanceof Event.Note) {
@@ -92,6 +96,10 @@ public class JidiSequence {
             }
 
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
+        }
+        
+        if(noteOn) {
+            track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), last.tokenPos));
         }
     }
     
