@@ -16,6 +16,8 @@ target
 *.antlr
 input.txt
 
+midifile.mid
+
 # External tool builders
 .externalToolBuilders/
 
