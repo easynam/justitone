@@ -1,6 +1,7 @@
 package justitone.parser;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -23,7 +24,7 @@ public class Reader {
     final SongVisitor songVisitor = new SongVisitor();
     final SequenceVisitor sequenceVisitor = new SequenceVisitor();
     final PolySequenceVisitor polySequenceVisitor = new PolySequenceVisitor();
-    final EventRepeatVisitor eventRepeatVisitor = new EventRepeatVisitor();
+    final SequenceItemVisitor sequenceItemVisitor = new SequenceItemVisitor();
     final EventVisitor eventVisitor = new EventVisitor();
     final FractionVisitor fractionVisitor = new FractionVisitor();
     final PitchVisitor pitchVisitor = new PitchVisitor();
@@ -55,9 +56,9 @@ public class Reader {
         public Sequence visitSequence(JIParser.SequenceContext ctx) {
             Sequence seq = new Sequence();
             
-            ctx.eventRepeat().stream()
-                             .flatMap(event -> event.accept(eventRepeatVisitor))
-                             .forEach(e -> seq.addEvent(e));
+            ctx.sequenceItem().stream()
+                              .map(event -> event.accept(sequenceItemVisitor))
+                              .forEach(f -> f.accept(seq));
 
             return seq;
         }
@@ -74,19 +75,28 @@ public class Reader {
         }
     }
     
-    class EventRepeatVisitor extends JIBaseVisitor<Stream<Event>> {
-        public Stream<Event> visitEventRepeat(JIParser.EventRepeatContext ctx) {
+    class SequenceItemVisitor extends JIBaseVisitor<Consumer<Sequence>> {
+        public Consumer<Sequence> visitEventRepeat(JIParser.EventRepeatContext ctx) {
             int repeats = ctx.repeats == null ? 1 : ctx.repeats.accept(integerVisitor);
 
             Event event = ctx.event().accept(eventVisitor);
 
-            Builder<Event> b = Stream.builder();
             
-            for (int i = 0; i < repeats; i++) {
-                b.accept(event);
-            }
-            
-            return b.build();
+            return (s -> {
+                for (int i = 0; i < repeats; i++) {
+                    s.addEvent(event);
+                }
+            });
+        }
+        
+        public Consumer<Sequence> visitJump(JIParser.JumpContext ctx) {
+            int repeats = ctx.times == null ? 1 : ctx.times.accept(integerVisitor);
+
+            return (s -> {
+                for (int i = 0; i < repeats; i++) {
+                    s.addSelf();
+                }
+            });
         }
     }
 

@@ -131,4 +131,12 @@ public abstract class Event {
 
         public BigFraction ratio;
     }
+    
+    public static class Jump extends Event {
+        public Jump(int times) {
+            this.times = times;
+        }
+
+        public int times;
+    }
 }

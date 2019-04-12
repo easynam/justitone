@@ -15,6 +15,7 @@ PLUS: '+';
 COLON: ':';
 COMMA: ',';
 ANGLE_BRACKET: '>';
+JUMP: '<';
 
 integer: DIGIT+;
 signed: MINUS? integer;
@@ -36,12 +37,14 @@ event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? OPEN_BAR polySequence CLOSE_BAR     #eventBar
      | MOD pitch                 #eventModulation
      ;
-     
-eventRepeat: event (REPEAT repeats=integer)?;
 
 polySequence: sequence (COMMA sequence)*;
      
-sequence: WS* (eventRepeat WS+)* eventRepeat WS*;
+sequenceItem: event (REPEAT repeats=integer)? #eventRepeat
+	        | JUMP (times=integer)            #jump
+	        ;
+     
+sequence: WS* (sequenceItem WS+)* sequenceItem WS*;
 
 song: tempo=integer COLON WS* sequence EOF;
 

@@ -18,6 +18,11 @@ public class Sequence {
         events.add(e);
     }
     
+
+    public void addSelf() {
+        events.addAll(events);
+    }
+    
     public BigFraction length() {
         return events.stream()
                      .map(e -> e.length())
