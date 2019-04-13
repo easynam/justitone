@@ -38,12 +38,14 @@ public abstract class Event {
     
     public static class Note extends Event {
         public Note(BigFraction length, BigFraction ratio) {
-            System.out.println("note created");
-            
             this.ratio = ratio;
             this.length = length;
         }
 
+        public Note() {
+            this(BigFraction.ONE, BigFraction.ONE);
+        }
+        
         public BigFraction ratio;
         BigFraction length;
 
@@ -56,6 +58,10 @@ public abstract class Event {
     public static class Rest extends Event {
         public Rest(BigFraction length) {
             this.length = length;
+        }
+        
+        public Rest() {
+            this(BigFraction.ONE);
         }
 
         BigFraction length;
@@ -72,6 +78,10 @@ public abstract class Event {
             this.length = length;
         }
 
+        public Hold() {
+            this(BigFraction.ONE);
+        }
+        
         BigFraction length;
 
         @Override
@@ -220,13 +230,5 @@ public abstract class Event {
         }
 
         public BigFraction ratio;
-    }
-    
-    public static class Jump extends Event {
-        public Jump(int times) {
-            this.times = times;
-        }
-
-        public int times;
     }
 }

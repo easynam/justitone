@@ -36,7 +36,8 @@ event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? pitch? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple
      | (lengthMultiplier=fraction)? pitch? OPEN_BAR polySequence CLOSE_BAR  #eventBar
      | (lengthMultiplier=fraction)? pitch? OPEN_FILL (start=sequence '|')? loop=sequence CLOSE_TUPLE  #eventFill
-     | (lengthMultiplier=fraction)? root=pitch? ('.' pitch)+  #eventChord
+     | event ('.' pitch)+        #eventChord
+     | ('.' pitch)+              #eventChord
      | MOD pitch                 #eventModulation
      ;
 

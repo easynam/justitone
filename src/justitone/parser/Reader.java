@@ -204,13 +204,10 @@ public class Reader {
 
         @Override
         public Event visitEventChord(JIParser.EventChordContext ctx) {
-            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
-            BigFraction ratio = ctx.root == null ? BigFraction.ONE : ctx.root.accept(pitchVisitor);
-            
-            Event.Note note = new Event.Note(BigFraction.ONE, BigFraction.ONE);
+            Event event = ctx.event() == null ? new Event.Note() : ctx.event().accept(eventVisitor);
+            BigFraction ratio = BigFraction.ONE;
             
             List<BigFraction> pitches = ctx.pitch().stream()
-                                                   .filter(p -> p != ctx.root)
                                                    .map(p -> p.accept(pitchVisitor))
                                                    .collect(Collectors.toList());
             
@@ -218,7 +215,7 @@ public class Reader {
             
             for (BigFraction p : pitches) {
               ratio = ratio.multiply(p);
-              events.add(new Event.Bar(length, ratio, new Sequence(note)));
+              events.add(new Event.Bar(BigFraction.ONE, ratio, new Sequence(event)));
           }
             
             return new Event.Poly(events);
