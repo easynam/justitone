@@ -23,9 +23,7 @@ public class Periods {
         Pair<BigFraction, BigFraction> period = new Pair<>(start, end);
         
         return periods.stream()
-                      .filter(p -> !overlaps(period, p))
-                      .findFirst()
-                      .isPresent();
+                      .allMatch(p -> !overlaps(period, p));
     }
     
     public boolean overlaps(Pair<BigFraction, BigFraction> period1, Pair<BigFraction, BigFraction> period2) {

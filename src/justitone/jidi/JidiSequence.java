@@ -33,11 +33,11 @@ public class JidiSequence {
     }
 
     public JidiTrack allocateTrack(BigFraction start, BigFraction end) {
-        Optional<JidiTrack> maybeTrack = used.keySet().stream()
-                                                      .filter(t -> used.get(t).canAllocate(start, end))
-                                                      .findFirst();
+        Optional<JidiTrack> maybeTrack = tracks.stream()
+                                               .filter(t -> used.get(t).canAllocate(start, end))
+                                               .findFirst();
         if (maybeTrack.isPresent()) {
-            JidiTrack track  = maybeTrack.get();
+            JidiTrack track = maybeTrack.get();
             
             used.get(track).allocate(start, end);
             
@@ -115,7 +115,7 @@ public class JidiSequence {
             for (int i = 1; i < subs.size(); i++) {
                 sub = subs.get(i);
                 
-                BigFraction end = currentPos.add(sub.length());
+                BigFraction end = currentPos.add(sub.length().multiply(state.lengthMultiplier));
                 
                 loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
                              currentPos, noteOn, sub.sequence(), allocateTrack(currentPos, end));
