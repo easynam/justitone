@@ -17,6 +17,10 @@ public abstract class Event {
         return BigFraction.ZERO;
     }
     
+    public Event chop(BigFraction toLength) {
+        return new Event.Bar(toLength.divide(length()), BigFraction.ONE, new Sequence(this));
+    }
+    
     public static abstract class SubSequence extends Event {
         BigFraction ratio;
         
@@ -33,6 +37,8 @@ public abstract class Event {
     
     public static class Note extends Event {
         public Note(BigFraction length, BigFraction ratio) {
+            System.out.println("note created");
+            
             this.ratio = ratio;
             this.length = length;
         }
@@ -75,6 +81,12 @@ public abstract class Event {
     }
     
     public static class Tuple extends SubSequence {
+        public Tuple(Sequence sequence) {
+            this.length = BigFraction.ONE;
+            this.ratio = BigFraction.ONE;
+            this.sequence = sequence;
+        }
+        
         public Tuple(BigFraction length, BigFraction ratio, Sequence sequence) {
             this.length = length;
             this.ratio = ratio;
@@ -98,9 +110,36 @@ public abstract class Event {
         public BigFraction eventLength() {
             return length.divide(sequence.length());
         }
+
+        @Override
+        public Event chop(BigFraction toLength) {
+            toLength = toLength.divide(eventLength());
+            BigFraction total = BigFraction.ZERO;
+            
+            Sequence seq = new Sequence();
+            
+            for (Event e : sequence.events) {
+                BigFraction start = total;
+                total = total.add(e.length());
+                
+                if (total.compareTo(toLength) >= 0) {
+                    seq.addEvent(e.chop(toLength.subtract(start)));
+                }
+                
+                seq.addEvent(e);
+            }
+            
+            return new Tuple(length, ratio, seq);
+        }
     }
     
     public static class Bar extends SubSequence {
+        public Bar(Sequence sequence) {
+            this.eventLength = BigFraction.ONE;
+            this.ratio = BigFraction.ONE;
+            this.sequence = sequence;
+        }
+        
         public Bar(BigFraction eventLength, BigFraction ratio, Sequence sequence) {
             this.eventLength = eventLength;
             this.ratio = ratio;
@@ -123,6 +162,28 @@ public abstract class Event {
         @Override
         public BigFraction eventLength() {
             return eventLength;
+        }
+        
+        @Override
+        public Event chop(BigFraction toLength) {
+            toLength = toLength.divide(eventLength());
+            
+            BigFraction total = BigFraction.ZERO;
+            
+            Sequence seq = new Sequence();
+            
+            for (Event e : sequence.events) {
+                BigFraction start = total;
+                total = total.add(e.length());
+                
+                if (total.compareTo(toLength) >= 0) {
+                    seq.addEvent(e.chop(toLength.subtract(start)));
+                }
+                
+                seq.addEvent(e);
+            }
+            
+            return new Bar(eventLength, ratio, seq);
         }
     }
     

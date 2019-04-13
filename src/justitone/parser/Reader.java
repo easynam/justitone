@@ -1,8 +1,11 @@
 package justitone.parser;
 
+import java.text.ParseException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -72,8 +75,8 @@ public class Reader {
         @Override
         public List<Sequence> visitPolySequence(JIParser.PolySequenceContext ctx) {
             List<Sequence> sequences = ctx.sequence().stream()
-                                           .map(event -> event.accept(sequenceVisitor))
-                                           .collect(Collectors.toList());
+                                                     .map(event -> event.accept(sequenceVisitor))
+                                                     .collect(Collectors.toList());
     
             return sequences;
         }
@@ -85,9 +88,9 @@ public class Reader {
 
             Event event = ctx.event().accept(eventVisitor);
 
-            
             return (s -> {
                 for (int i = 0; i < repeats; i++) {
+                    System.out.println("adding " + event);
                     s.addEvent(event);
                 }
             });
@@ -157,6 +160,48 @@ public class Reader {
                                               .collect(Collectors.toList());
             
             return new Event.Poly(bars);
+        }
+        
+        @Override
+        public Event visitEventFill(JIParser.EventFillContext ctx) {
+            //this should go somewhere else at this point
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
+
+            Sequence start = ctx.start == null ? new Sequence() : ctx.start.accept(sequenceVisitor);
+            Sequence loop = ctx.loop.accept(sequenceVisitor);
+            
+            if (loop.length().equals(BigFraction.ZERO)) {
+                throw new RuntimeException("Empty loop in fill at "+ ctx.loop.start.getStartIndex());
+            }
+            
+            if (start.length().compareTo(length) >= 0) {
+                return new Event.Bar(start).chop(length);
+            }
+            
+            BigFraction total = start.length();
+            Sequence seq = new Sequence();
+            
+            seq.addEvent(new Event.Bar(start));
+
+            while(true) {
+                BigFraction prev = total;
+                total = total.add(loop.length());
+
+                if (total.compareTo(length) >= 0) {
+                    BigFraction toLength = length.subtract(prev);
+
+                    System.out.println("Adding event "+loop);
+                    seq.addEvent(new Event.Bar(loop).chop(toLength));
+                    
+                    break;
+                }
+
+                System.out.println("Adding event "+loop);
+                seq.addEvent(new Event.Bar(loop));
+            }
+            
+            return new Event.Bar(BigFraction.ONE, ratio, seq);
         }
 
         @Override

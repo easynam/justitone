@@ -36,6 +36,7 @@ event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? MINUS  #eventHold
      | (length=fraction)? pitch? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple
      | (lengthMultiplier=fraction)? pitch? OPEN_BAR polySequence CLOSE_BAR  #eventBar
+     | (lengthMultiplier=fraction)? pitch? OPEN_TUPLE REPEAT (start=sequence '|')? loop=sequence CLOSE_TUPLE  #eventFill
      | MOD pitch                 #eventModulation
      ;
 
@@ -45,7 +46,7 @@ sequenceItem: event (REPEAT repeats=integer)?                     #eventRepeat
 	        | (lengthMultiplier=fraction)? pitch? JUMP (times=integer)?  #jump
 	        ;
      
-sequence: WS* (sequenceItem WS+)* sequenceItem WS*;
+sequence: WS* (sequenceItem WS+)* sequenceItem? WS*;
 
 song: tempo=integer COLON WS* sequence EOF;
 

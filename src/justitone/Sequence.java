@@ -1,6 +1,7 @@
 package justitone;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.fraction.BigFraction;
@@ -15,6 +16,16 @@ public class Sequence {
     public Sequence(Sequence sequence) {
         events = new ArrayList<>();
         events.addAll(sequence.events);
+    }
+
+    public Sequence(List<Event> events) {
+        this.events = new ArrayList<>();
+        this.events.addAll(events);
+    }
+    
+    public Sequence(Event... events) {
+        this.events = new ArrayList<>();
+        this.events.addAll(Arrays.asList(events));
     }
 
     public void addEvent(Event e) {
