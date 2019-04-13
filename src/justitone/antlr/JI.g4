@@ -50,4 +50,12 @@ sequence: WS* (sequenceItem WS+)* sequenceItem? WS*;
 
 song: tempo=integer COLON WS* sequence EOF;
 
+COMMENT
+    : '/*' .*? '*/' -> channel(HIDDEN)
+    ;
+
+LINE_COMMENT
+    : '//' ~[\r\n]* -> channel(HIDDEN)
+    ;
+
 WS : [ \t\r\n]+;
