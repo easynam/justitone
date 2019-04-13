@@ -16,6 +16,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import justitone.Track;
 import justitone.Note;
+import justitone.jidi.JidiSequence;
+import justitone.jidi.JidiTrack;
+import justitone.jidi.JidiEvent;
 
 public class Playback implements Runnable {
     static final int fs = 44100;
@@ -26,7 +29,7 @@ public class Playback implements Runnable {
 
     ConcurrentLinkedQueue<Message> queue;
 
-    Track track;
+    JidiSequence sequence;
     boolean running = true;
     boolean playing = false;
     int beat;
@@ -60,8 +63,8 @@ public class Playback implements Runnable {
             // process events
             Message message;
             while ((message = queue.poll()) != null) {
-                if (message instanceof Message.SetTrack) {
-                    track = ((Message.SetTrack)message).track;
+                if (message instanceof Message.SetSequence) {
+                    sequence = ((Message.SetSequence)message).sequence;
                 } else if (message instanceof Message.Play) {
                     playing = true;
                 } else if (message instanceof Message.Stop) {
@@ -74,6 +77,19 @@ public class Playback implements Runnable {
             ByteBuffer buf = ByteBuffer.allocate(bufSize * sampleSize);
 
             // fill buffer with samples
+            if (sequence != null) {
+                for (JidiTrack track : sequence.tracks) {
+                    for (JidiEvent event : track.events) {
+                        if (event instanceof JidiEvent.NoteOn) {
+                            
+                        } else if (event instanceof JidiEvent.NoteOff) {
+
+                        } else if (event instanceof JidiEvent.Pitch) {
+                            
+                        }
+                    }
+                }
+            }
 
             line.write(buf.array(), 0, bufSize);
         }

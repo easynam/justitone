@@ -1,12 +1,12 @@
 package justitone.audio;
 
-import justitone.Track;
+import justitone.jidi.JidiSequence;
 
 public abstract class Message {
-    public static class SetTrack extends Message {
-        public Track track;
-        public SetTrack(Track track) {
-            this.track = track;
+    public static class SetSequence extends Message {
+        public JidiSequence sequence;
+        public SetSequence(JidiSequence sequence) {
+            this.sequence = sequence;
         }
     }
     public static class Play extends Message {}
