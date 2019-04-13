@@ -10,6 +10,7 @@ OPEN_TUPLE: '[';
 OPEN_FILL: '[*';
 CLOSE_TUPLE: ']';
 OPEN_BAR: '{';
+OPEN_MOD_GROUP: '{^';
 CLOSE_BAR: '}';
 REPEAT: '*';
 PLUS: '+';
@@ -35,6 +36,7 @@ event: (length=fraction)? pitch  #eventNote
      | (length=fraction)? MINUS  #eventHold
      | (length=fraction)? pitch? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple
      | (lengthMultiplier=fraction)? pitch? OPEN_BAR polySequence CLOSE_BAR  #eventBar
+     | (lengthMultiplier=fraction)? pitch? OPEN_MOD_GROUP polySequence CLOSE_BAR  #eventModGroup
      | (lengthMultiplier=fraction)? pitch? OPEN_FILL (start=sequence '|')? loop=sequence CLOSE_TUPLE  #eventFill
      | event ('.' pitch)+        #eventChord
      | ('.' pitch)+              #eventChord

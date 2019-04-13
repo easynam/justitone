@@ -64,7 +64,7 @@ public class JidiSequence {
             if (e instanceof Event.Note) {
                 noteOn = true;
 
-                float freq = ((Event.Note) e).ratio.multiply(state.freqMultiplier).floatValue() * 440f;
+                float freq = ((Event.Note) e).ratio().multiply(state.freqMultiplier).floatValue() * 440f;
 
                 track.add(new JidiEvent.NoteOn(tick, e.tokenPos));
                 track.add(new JidiEvent.Pitch(tick, freq, e.tokenPos));
@@ -85,7 +85,7 @@ public class JidiSequence {
                 noteOn = false;
             }
             else if (e instanceof Event.Modulation) {
-                state = state.multiplyFreq(((Event.Modulation) e).ratio);
+                state = state.multiplyFreq(((Event.Modulation) e).ratio());
             }
             else if (e instanceof Event.SubSequence) {
                 Event.SubSequence sub = (Event.SubSequence) e;

@@ -9,13 +9,20 @@ import org.apache.commons.math3.fraction.BigFraction;
 public abstract class Event {
     public TokenPos tokenPos;
     
+    protected BigFraction ratio = BigFraction.ONE;
+    protected BigFraction length = BigFraction.ZERO;
+
     public Event withTokenPos(TokenPos pos) {
         this.tokenPos = pos;
         return this;
     }
     
     public BigFraction length() {
-        return BigFraction.ZERO;
+        return length;
+    }
+    
+    public BigFraction ratio() {
+        return ratio;
     }
     
     public SubSequence chop(BigFraction toLength) {
@@ -23,11 +30,6 @@ public abstract class Event {
     }
     
     public static abstract class SubSequence extends Event {
-        BigFraction ratio;
-        
-        public BigFraction ratio() {
-            return ratio;
-        }
         public Sequence sequence() {
             throw new NotImplementedException();
         }
@@ -45,14 +47,6 @@ public abstract class Event {
         public Note() {
             this(BigFraction.ONE, BigFraction.ONE);
         }
-        
-        public BigFraction ratio;
-        BigFraction length;
-
-        @Override
-        public BigFraction length() {
-            return length;
-        }
     }
     
     public static class Rest extends Event {
@@ -63,14 +57,6 @@ public abstract class Event {
         public Rest() {
             this(BigFraction.ONE);
         }
-
-        BigFraction length;
-
-        @Override
-        public BigFraction length() {
-            return length;
-        }
-        
     }
 
     public static class Hold extends Event {
@@ -81,14 +67,6 @@ public abstract class Event {
         public Hold() {
             this(BigFraction.ONE);
         }
-        
-        BigFraction length;
-
-        @Override
-        public BigFraction length() {
-            return length;
-        }
-        
     }
     
     public static class Tuple extends SubSequence {
@@ -104,13 +82,7 @@ public abstract class Event {
             this.sequence = sequence;
         }
 
-        BigFraction length;
         Sequence sequence;
-
-        @Override
-        public BigFraction length() {
-            return length;
-        }
 
         @Override
         public Sequence sequence() {
@@ -210,6 +182,7 @@ public abstract class Event {
 
         public List<SubSequence> sequences;
         
+        @Override
         public BigFraction length() {
             return sequences.stream().map(Event::length).max(Comparable::compareTo).get();
         }
@@ -228,7 +201,5 @@ public abstract class Event {
         public Modulation(BigFraction ratio) {
             this.ratio = ratio;
         }
-
-        public BigFraction ratio;
     }
 }

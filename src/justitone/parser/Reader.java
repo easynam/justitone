@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -148,19 +149,6 @@ public class Reader {
         }
 
         @Override
-        public Event visitEventBar(JIParser.EventBarContext ctx) {
-            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
-            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
-            List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
-
-            List<SubSequence> bars = sequences.stream()
-                                              .map(s -> new Event.Bar(length, ratio, s))
-                                              .collect(Collectors.toList());
-            
-            return new Event.Poly(bars);
-        }
-        
-        @Override
         public Event visitEventFill(JIParser.EventFillContext ctx) {
             //this should go somewhere else at this point
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
@@ -202,6 +190,35 @@ public class Reader {
             return new Event.Bar(BigFraction.ONE, ratio, seq);
         }
 
+        @Override
+        public Event visitEventBar(JIParser.EventBarContext ctx) {
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
+            List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
+
+            List<SubSequence> bars = sequences.stream()
+                                              .map(s -> new Event.Bar(length, ratio, s))
+                                              .collect(Collectors.toList());
+            
+            return new Event.Poly(bars);
+        }
+
+        @Override
+        public Event visitEventModGroup(JIParser.EventModGroupContext ctx) {
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
+            List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
+
+            List<SubSequence> bars = sequences.stream()
+                                              .map(s -> s.events.stream()
+                                                                .flatMap(e -> Stream.concat(Stream.of(e), Stream.of(new Event.Modulation(e.ratio()))))
+                                                                .collect(Collectors.toList()))
+                                              .map(s -> new Event.Bar(length, ratio, new Sequence(s)))
+                                              .collect(Collectors.toList());
+            
+            return new Event.Poly(bars);
+        }
+        
         @Override
         public Event visitEventChord(JIParser.EventChordContext ctx) {
             Event event = ctx.event() == null ? new Event.Note() : ctx.event().accept(eventVisitor);
