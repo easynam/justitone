@@ -128,7 +128,13 @@ public class MidiUI extends JPanel {
             
             for (JidiEvent event : track.events) {
                 if (event.tick <= tick) {
-                    last = event.tokenPos;
+                    
+                    if (event instanceof JidiEvent.NoteOff) {
+                        last = null;
+                    }
+                    else {
+                        last = event.tokenPos;
+                    }
                 }
                 else break;
             }
