@@ -27,6 +27,7 @@ angle: signed;
 
 pitch: COLON ratio=fraction #pitchRatio
      | ANGLE_BRACKET angle  #pitchAngle
+     | '\'' integer         #pitchSuperparticular
      | pitch pitch+         #pitchMultiple
      | pitch PLUS+          #pitchPower
      ;

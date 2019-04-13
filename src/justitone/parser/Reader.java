@@ -1,11 +1,8 @@
 package justitone.parser;
 
-import java.text.ParseException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -220,6 +217,18 @@ public class Reader {
         public BigFraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
             return ctx.ratio.accept(fractionVisitor);
         }
+        
+        @Override
+        public BigFraction visitPitchSuperparticular(JIParser.PitchSuperparticularContext ctx) {
+            int numerator = ctx.integer().accept(integerVisitor);
+            
+            if(numerator <= 1) {
+                throw new RuntimeException("Superparticular numerator cant be less than 2");
+            }
+            
+            return new BigFraction(numerator, numerator - 1);
+        }
+
 
         @Override
         public BigFraction visitPitchAngle(JIParser.PitchAngleContext ctx) {
