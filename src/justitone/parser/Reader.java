@@ -213,30 +213,39 @@ public class Reader {
     }
     
     class PitchVisitor extends JIBaseVisitor<BigFraction> {
+        BigFraction invert(BigFraction ratio, boolean shouldInvert) {
+            if (shouldInvert) {
+                return ratio.reciprocal();
+            }
+            else return ratio;
+        }
+        
         @Override
         public BigFraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
-            return ctx.ratio.accept(fractionVisitor);
+            boolean invert = ctx.MINUS() != null;
+            
+            return invert(ctx.ratio.accept(fractionVisitor), invert);
         }
         
         @Override
         public BigFraction visitPitchSuperparticular(JIParser.PitchSuperparticularContext ctx) {
             int numerator = ctx.integer().accept(integerVisitor);
+            boolean invert = ctx.MINUS() != null;
             
             if(numerator <= 1) {
                 throw new RuntimeException("Superparticular numerator cant be less than 2");
             }
             
-            return new BigFraction(numerator, numerator - 1);
+            return invert(new BigFraction(numerator, numerator - 1), invert);
         }
 
 
         @Override
         public BigFraction visitPitchAngle(JIParser.PitchAngleContext ctx) {
-            int angle = ctx.angle().accept(integerVisitor);
+            int angle = ctx.integer().accept(integerVisitor);
+            boolean invert = ctx.MINUS() != null;
 
-            if (angle > 0)
-                return new BigFraction(180, 180 - angle);
-            return new BigFraction(180 + angle, 180);
+            return invert(new BigFraction(180, 180 - angle), invert);
         }
 
         @Override
@@ -262,11 +271,6 @@ public class Reader {
     }
 
     class IntegerVisitor extends JIBaseVisitor<Integer> {
-        @Override
-        public Integer visitSigned(JIParser.SignedContext ctx) {
-            return Integer.parseInt(ctx.getText());
-        }
-
         @Override
         public Integer visitInteger(JIParser.IntegerContext ctx) {
             return Integer.parseInt(ctx.getText());

@@ -18,18 +18,15 @@ ANGLE_BRACKET: '>';
 JUMP: '<';
 
 integer: DIGIT+;
-signed: MINUS? integer;
 
 fraction: num=integer ('/' den=integer)?
         | '/' den=integer;
 
-angle: signed;
-
-pitch: COLON ratio=fraction #pitchRatio
-     | ANGLE_BRACKET angle  #pitchAngle
-     | '\'' integer         #pitchSuperparticular
-     | pitch pitch+         #pitchMultiple
-     | pitch PLUS+          #pitchPower
+pitch: MINUS? COLON ratio=fraction         #pitchRatio
+     | MINUS? ANGLE_BRACKET angle=integer  #pitchAngle
+     | MINUS? '\'' integer                 #pitchSuperparticular
+     | pitch pitch+                        #pitchMultiple
+     | pitch PLUS+                         #pitchPower
      ;
      
 event: (length=fraction)? pitch  #eventNote
