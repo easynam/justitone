@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.math3.fraction.BigFraction;
 
 import justitone.Event;
@@ -164,6 +165,8 @@ public class Reader {
         
         @Override
         public Event visitEventFill(JIParser.EventFillContext ctx) {
+            if (true) throw new NotImplementedException();
+            
             //this should go somewhere else at this point
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
