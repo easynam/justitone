@@ -1,5 +1,6 @@
 package justitone;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -176,8 +177,9 @@ public abstract class Event {
     }
     
     public static class Poly extends Event {
-        public Poly(List<SubSequence> sequences) {
+        public Poly(BigFraction ratio, List<SubSequence> sequences) {
             this.sequences = sequences;
+            this.ratio = ratio;
         }
 
         public List<SubSequence> sequences;
@@ -193,7 +195,7 @@ public abstract class Event {
                                               .map(s -> s.chop(toLength))
                                               .collect(Collectors.toList());
             
-            return new Bar(new Sequence(new Poly(seqs)));
+            return new Bar(new Sequence(new Poly(BigFraction.ONE, seqs)));
         }
     }
     

@@ -145,7 +145,7 @@ public class Reader {
                                                 .map(s -> new Event.Tuple(length, ratio, s))
                                                 .collect(Collectors.toList());
             
-            return new Event.Poly(tuples);
+            return new Event.Poly(ratio, tuples);
         }
 
         @Override
@@ -200,7 +200,7 @@ public class Reader {
                                               .map(s -> new Event.Bar(length, ratio, s))
                                               .collect(Collectors.toList());
             
-            return new Event.Poly(bars);
+            return new Event.Poly(ratio, bars);
         }
 
         @Override
@@ -216,7 +216,7 @@ public class Reader {
                                               .map(s -> new Event.Bar(length, ratio, new Sequence(s)))
                                               .collect(Collectors.toList());
             
-            return new Event.Poly(bars);
+            return new Event.Poly(ratio, bars);
         }
         
         @Override
@@ -235,7 +235,7 @@ public class Reader {
               events.add(new Event.Bar(BigFraction.ONE, ratio, new Sequence(event)));
           }
             
-            return new Event.Poly(events);
+            return new Event.Poly(event.ratio(), events);
         }
 
         @Override
