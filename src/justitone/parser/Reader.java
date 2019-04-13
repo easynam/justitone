@@ -1,5 +1,6 @@
 package justitone.parser;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -199,6 +200,28 @@ public class Reader {
             }
             
             return new Event.Bar(BigFraction.ONE, ratio, seq);
+        }
+
+        @Override
+        public Event visitEventChord(JIParser.EventChordContext ctx) {
+            BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
+            BigFraction ratio = ctx.root == null ? BigFraction.ONE : ctx.root.accept(pitchVisitor);
+            
+            Event.Note note = new Event.Note(BigFraction.ONE, BigFraction.ONE);
+            
+            List<BigFraction> pitches = ctx.pitch().stream()
+                                                   .filter(p -> p != ctx.root)
+                                                   .map(p -> p.accept(pitchVisitor))
+                                                   .collect(Collectors.toList());
+            
+            List<SubSequence> events = new ArrayList<>();
+            
+            for (BigFraction p : pitches) {
+              ratio = ratio.multiply(p);
+              events.add(new Event.Bar(length, ratio, new Sequence(note)));
+          }
+            
+            return new Event.Poly(events);
         }
 
         @Override
