@@ -100,7 +100,7 @@ public class JidiSequence {
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
         }
         
-        if(noteOn) {
+        if(last != null && noteOn) {
             track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), last.tokenPos));
         }
     }

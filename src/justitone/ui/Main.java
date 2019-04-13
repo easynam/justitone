@@ -23,7 +23,7 @@ public class Main extends JPanel {
     JTextArea textArea;
 
     public Main(Reader reader) {
-        textArea = new JTextArea("120: [* :1 ]");
+        textArea = new JTextArea("120: 3/2[* [:1 :2 :3] ]");
         textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
         JButton play = new JButton("Play");

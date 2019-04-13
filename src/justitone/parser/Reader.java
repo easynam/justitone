@@ -162,8 +162,6 @@ public class Reader {
         
         @Override
         public Event visitEventFill(JIParser.EventFillContext ctx) {
-            if (true) throw new NotImplementedException();
-            
             //this should go somewhere else at this point
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
@@ -182,6 +180,8 @@ public class Reader {
             BigFraction total = start.length();
             Sequence seq = new Sequence();
             
+            System.out.println("CREATED SEQ------"+seq);
+
             seq.addEvent(new Event.Bar(start));
 
             while(true) {
@@ -191,13 +191,11 @@ public class Reader {
                 if (total.compareTo(length) >= 0) {
                     BigFraction toLength = length.subtract(prev);
 
-                    System.out.println("Adding event "+loop);
                     seq.addEvent(new Event.Bar(loop).chop(toLength));
                     
                     break;
                 }
 
-                System.out.println("Adding event "+loop);
                 seq.addEvent(new Event.Bar(loop));
             }
             

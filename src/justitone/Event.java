@@ -1,6 +1,8 @@
 package justitone;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.math3.fraction.BigFraction;
@@ -17,7 +19,7 @@ public abstract class Event {
         return BigFraction.ZERO;
     }
     
-    public Event chop(BigFraction toLength) {
+    public SubSequence chop(BigFraction toLength) {
         return new Event.Bar(toLength.divide(length()), BigFraction.ONE, new Sequence(this));
     }
     
@@ -112,7 +114,8 @@ public abstract class Event {
         }
 
         @Override
-        public Event chop(BigFraction toLength) {
+        public SubSequence chop(BigFraction toLength) {
+            BigFraction newTupleLength = toLength.divide(length);
             toLength = toLength.divide(eventLength());
             BigFraction total = BigFraction.ZERO;
             
@@ -124,12 +127,14 @@ public abstract class Event {
                 
                 if (total.compareTo(toLength) >= 0) {
                     seq.addEvent(e.chop(toLength.subtract(start)));
+
+                    break;
                 }
                 
                 seq.addEvent(e);
             }
             
-            return new Tuple(length, ratio, seq);
+            return new Tuple(newTupleLength, ratio, seq);
         }
     }
     
@@ -165,7 +170,7 @@ public abstract class Event {
         }
         
         @Override
-        public Event chop(BigFraction toLength) {
+        public SubSequence chop(BigFraction toLength) {
             toLength = toLength.divide(eventLength());
             
             BigFraction total = BigFraction.ZERO;
@@ -178,6 +183,8 @@ public abstract class Event {
                 
                 if (total.compareTo(toLength) >= 0) {
                     seq.addEvent(e.chop(toLength.subtract(start)));
+                    
+                    break;
                 }
                 
                 seq.addEvent(e);
@@ -196,6 +203,15 @@ public abstract class Event {
         
         public BigFraction length() {
             return sequences.stream().map(Event::length).max(Comparable::compareTo).get();
+        }
+        
+        @Override
+        public SubSequence chop(BigFraction toLength) {
+            List<SubSequence> seqs = sequences.stream()
+                                              .map(s -> s.chop(toLength))
+                                              .collect(Collectors.toList());
+            
+            return new Bar(new Sequence(new Poly(seqs)));
         }
     }
     
