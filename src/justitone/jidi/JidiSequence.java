@@ -66,8 +66,7 @@ public class JidiSequence {
 
                 float freq = ((Event.Note) e).ratio().multiply(state.freqMultiplier).floatValue() * 440f;
 
-                track.add(new JidiEvent.NoteOn(tick, e.tokenPos));
-                track.add(new JidiEvent.Pitch(tick, freq, e.tokenPos));
+                track.add(new JidiEvent.NoteOn(tick, freq, e.tokenPos));
             }
             else if (e instanceof Event.Rest) {
                 if (noteOn) {
