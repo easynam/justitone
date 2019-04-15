@@ -73,8 +73,8 @@ public class Playback implements Runnable {
                     for (JidiTrack track : sequence.tracks) {
                         int e = 0;
                         for (JidiEvent event : track.events) {
-                            if (event instanceof JidiEvent.NoteOn) {
-                                JidiEvent.NoteOn note = (JidiEvent.NoteOn)event;
+                            if (event instanceof JidiEvent.Pitch) {
+                                JidiEvent.Pitch note = (JidiEvent.Pitch)event;
                                 float start = ticksToSeconds(note.tick - tick - offset, sequence.bpm, sequence.ppm);
                                 float end;
                                 if (e + 1 < track.events.size()) {

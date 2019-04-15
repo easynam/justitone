@@ -90,12 +90,12 @@ public class Midi {
         boolean noteOn = false;
         
         for (JidiEvent e : jidiTrack.events) {
-            if (e instanceof JidiEvent.NoteOn) {
+            if (e instanceof JidiEvent.Pitch) {
                 if (noteOn) {
                     writeNoteOff(track, freq, e.tick, channel);
                 }
                 
-                JidiEvent.NoteOn note = (JidiEvent.NoteOn) e;
+                JidiEvent.Pitch note = (JidiEvent.Pitch) e;
                 
                 freq = note.freq;
                 writeNoteOn(track, freq, note.tick, pitchBendRange, channel);
