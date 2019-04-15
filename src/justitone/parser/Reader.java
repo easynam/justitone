@@ -247,7 +247,7 @@ public class Reader {
         
         @Override
         public Event visitEventInstrument(JIParser.EventInstrumentContext ctx) {
-            int instrument = ctx.integer().accept(integerVisitor);
+            int instrument = ctx.integer().accept(integerVisitor) - 1;
 
             return new Event.Instrument(instrument).withTokenPos(tokenPos(ctx));
         }
