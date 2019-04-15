@@ -1,10 +1,11 @@
 package justitone.jidi;
 
+import java.util.List;
+
 import justitone.TokenPos;
 
 public abstract class JidiEvent {
     public long tick;
-    public TokenPos tokenPos;
     
     public static class NoteOn extends JidiEvent {
         @Override
@@ -12,9 +13,8 @@ public abstract class JidiEvent {
             return tick + ": NoteOn";
         }
 
-        NoteOn(int tick, TokenPos pos) {
+        NoteOn(long tick) {
             this.tick = tick;
-            this.tokenPos = pos;
         }
     }
     
@@ -24,9 +24,8 @@ public abstract class JidiEvent {
             return tick + ": NoteOff";
         }
 
-        NoteOff(int tick, TokenPos pos) {
+        NoteOff(long tick) {
             this.tick = tick;
-            this.tokenPos = pos;
         }
     }
     
@@ -38,10 +37,9 @@ public abstract class JidiEvent {
 
         public float freq;
 
-        Pitch(int tick, float freq, TokenPos pos) {
+        Pitch(long tick, float freq) {
             this.tick = tick;
             this.freq = freq;
-            this.tokenPos = pos;
         }
     }
     
@@ -53,22 +51,23 @@ public abstract class JidiEvent {
         
         public int instrument;
         
-        Instrument(int tick, int instrument, TokenPos pos) {
+        Instrument(long tick, int instrument) {
             this.tick = tick;
-            this.tokenPos = pos;
             this.instrument = instrument;
         }
     }
     
-    public static class Empty extends JidiEvent {
+    public static class Token extends JidiEvent {
         @Override
         public String toString() {
-            return tick + ": Empty";
+            return tick + ": Tokens";
         }
         
-        Empty(int tick, TokenPos pos) {
+        public List<TokenPos> tokens;
+        
+        Token(long tick, List<TokenPos> tokens) {
             this.tick = tick;
-            this.tokenPos = pos;
+            this.tokens = tokens;
         }
     }
 }

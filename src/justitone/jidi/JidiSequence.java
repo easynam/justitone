@@ -1,6 +1,8 @@
 package justitone.jidi;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,46 +58,47 @@ public class JidiSequence {
     
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
         track.events.stream().filter(e -> e instanceof JidiEvent.Instrument).collect(Collectors.toList());
-        track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), state.instrument, null));
+        track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), state.instrument));
         
         for (Event e : sequence.contents()) {
-            int tick = currentPos.multiply(ppm).intValue();
+            long tick = currentPos.multiply(ppm).longValue();
 
             if (e instanceof Event.Note) {
+                track.add(new JidiEvent.Token(tick, e.tokens));
+                
                 if (noteOn) {
-                    track.add(new JidiEvent.NoteOff(tick, e.tokenPos));
+                    track.add(new JidiEvent.NoteOff(tick));
                 }
 
                 float freq = ((Event.Note) e).ratio().multiply(state.freqMultiplier).floatValue() * 440f;
 
-                track.add(new JidiEvent.Pitch(tick, freq, e.tokenPos));
-                track.add(new JidiEvent.NoteOn(tick, e.tokenPos));
+                track.add(new JidiEvent.Pitch(tick, freq));
+                track.add(new JidiEvent.NoteOn(tick));
                 
                 noteOn = true;
             }
             else if (e instanceof Event.Rest) {
+                track.add(new JidiEvent.Token(tick, e.tokens));
+                
                 if (noteOn) {
-                    track.add(new JidiEvent.NoteOff(tick, e.tokenPos));
-                }
-                else {
-                    track.add(new JidiEvent.Empty(tick, e.tokenPos));
+                    track.add(new JidiEvent.NoteOff(tick));
                 }
 
                 noteOn = false;
             }
             else if (e instanceof Event.Hold) {
-                track.add(new JidiEvent.Empty(tick, e.tokenPos));
+                track.add(new JidiEvent.Token(tick, e.tokens));
             }
             else if (e instanceof Event.Modulation) {
                 state = state.multiplyFreq(((Event.Modulation) e).ratio());
             }
             else if (e instanceof Event.Instrument) {
                 if (noteOn) {
-                    track.add(new JidiEvent.NoteOff(tick, e.tokenPos));
+                    track.add(new JidiEvent.NoteOff(tick));
                 }
                 
                 Event.Instrument i = (Event.Instrument) e;
-                track.add(new JidiEvent.Instrument(tick, i.instrument, i.tokenPos));
+                track.add(new JidiEvent.Instrument(tick, i.instrument));
                 
                 state = state.changeInstrument(((Event.Instrument) e).instrument);
                 
@@ -113,10 +116,12 @@ public class JidiSequence {
 
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
         }
+
+        long tick = currentPos.multiply(ppm).longValue();
         
-        
+        track.add(new JidiEvent.Token(tick, Collections.emptyList()));
         if(noteOn) {
-            track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), null));
+            track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue()));
         }
     }
     

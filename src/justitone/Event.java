@@ -1,5 +1,6 @@
 package justitone;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,13 +8,13 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public abstract class Event {
-    public TokenPos tokenPos;
+    public List<TokenPos> tokens = new ArrayList<TokenPos>();
     
     protected BigFraction ratio = BigFraction.ONE;
     protected BigFraction length = BigFraction.ZERO;
 
-    public Event withTokenPos(TokenPos pos) {
-        this.tokenPos = pos;
+    public Event withTokenPos(TokenPos token) {
+        tokens.add(token);
         return this;
     }
     

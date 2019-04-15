@@ -221,7 +221,7 @@ public class Reader {
         
         @Override
         public Event visitEventChord(JIParser.EventChordContext ctx) {
-            Event event = ctx.event() == null ? new Event.Note().withTokenPos(tokenPos(ctx)) : ctx.event().accept(eventVisitor);
+            Event event = ctx.event() == null ? new Event.Note().withTokenPos(tokenPos(ctx)) : ctx.event().accept(eventVisitor).withTokenPos(tokenPos(ctx));
             BigFraction ratio = BigFraction.ONE;
             
             List<BigFraction> pitches = ctx.pitch().stream()

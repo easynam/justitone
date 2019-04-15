@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -159,23 +160,19 @@ public class MidiUI extends JPanel {
         List<TokenPos> tokens = new ArrayList<>();
         
         for (JidiTrack track : jidiSeq.tracks) {
-            TokenPos last = null;
+            List<TokenPos> last = Collections.emptyList();
             
             for (JidiEvent event : track.events) {
                 if (event.tick <= tick) {
                     
-                    if (event instanceof JidiEvent.NoteOff) {
-                        last = null;
-                    }
-                    else {
-                        last = event.tokenPos;
+                    if (event instanceof JidiEvent.Token) {
+                        last = ((JidiEvent.Token) event).tokens;
                     }
                 }
                 else break;
             }
             
-            if (last != null)
-              tokens.add(last);
+            tokens.addAll(last);
         }
         
         highlighter.removeAllHighlights();
