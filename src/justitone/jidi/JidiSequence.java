@@ -55,7 +55,8 @@ public class JidiSequence {
     
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
         Event last = null;
-        int startInstrument = state.instrument;
+
+        track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), state.instrument, null));
         
         for (Event e : sequence.contents()) {
             last = e;
@@ -110,10 +111,6 @@ public class JidiSequence {
         if(last != null && noteOn) {
             track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), null));
         }
-        
-        if(state.instrument != startInstrument) {
-            track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), startInstrument, null));
-        }
     }
     
     public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
@@ -142,6 +139,7 @@ public class JidiSequence {
         public State(BigFraction lengthMultiplier, BigFraction freqMultiplier, int instrument) {
             this.lengthMultiplier = lengthMultiplier;
             this.freqMultiplier = freqMultiplier;
+            this.instrument = instrument;
         }
         
         public State(State state) {
