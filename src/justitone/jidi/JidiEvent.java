@@ -33,6 +33,16 @@ public abstract class JidiEvent {
         }
     }
     
+    public static class Instrument extends JidiEvent {
+        public int instrument;
+        
+        Instrument(int tick, int instrument, TokenPos pos) {
+            this.tick = tick;
+            this.tokenPos = pos;
+            this.instrument = instrument;
+        }
+    }
+    
     public static class Empty extends JidiEvent {
         Empty(int tick, TokenPos pos) {
             this.tick = tick;

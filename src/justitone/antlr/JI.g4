@@ -41,6 +41,7 @@ event: (length=fraction)? pitch  #eventNote
      | event ('.' pitch)+        #eventChord
      | ('.' pitch)+              #eventChord
      | MOD pitch                 #eventModulation
+     | '@' integer               #eventInstrument
      ;
 
 polySequence: sequence (COMMA sequence)*;

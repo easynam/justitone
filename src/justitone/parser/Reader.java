@@ -244,6 +244,13 @@ public class Reader {
 
             return new Event.Modulation(ratio).withTokenPos(tokenPos(ctx));
         }
+        
+        @Override
+        public Event visitEventInstrument(JIParser.EventInstrumentContext ctx) {
+            int instrument = ctx.integer().accept(integerVisitor);
+
+            return new Event.Instrument(instrument).withTokenPos(tokenPos(ctx));
+        }
     }
     
     class PitchVisitor extends JIBaseVisitor<BigFraction> {

@@ -203,4 +203,12 @@ public abstract class Event {
             this.ratio = ratio;
         }
     }
+    
+    public static class Instrument extends Event {
+        public Instrument(int instrument) {
+            this.instrument = instrument;
+        }
+        
+        public int instrument;
+    }
 }

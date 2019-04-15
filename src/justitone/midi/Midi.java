@@ -31,6 +31,7 @@ public class Midi {
         int channel = 0;
         
         for (JidiTrack jidiTrack : jidi.tracks) {
+            if (channel == 9) channel++;
             addTrack(seq, jidiTrack, pitchBendRange, channel++);
         }
 
@@ -81,7 +82,7 @@ public class Midi {
         Track track = seq.createTrack();
         
         ShortMessage message = new ShortMessage();
-        message.setMessage(ShortMessage.PROGRAM_CHANGE | channel, 80, 0);
+        message.setMessage(ShortMessage.PROGRAM_CHANGE | channel, 0, 0);
         track.add(new MidiEvent(message, 0));
         
         float freq = 440;
@@ -103,6 +104,11 @@ public class Midi {
             }
             else if (e instanceof JidiEvent.NoteOff) {
                 writeNoteOff(track, freq, e.tick, channel);
+                
+                noteOn = false;
+            }
+            else if (e instanceof JidiEvent.Instrument) {
+                writeInstrument(track, freq, e.tick, channel, ((JidiEvent.Instrument) e).instrument);
                 
                 noteOn = false;
             }
@@ -132,5 +138,10 @@ public class Midi {
         message.setMessage(ShortMessage.NOTE_OFF | channel, midiNote(note), 0x40);
         track.add(new MidiEvent(message, tick));
     }
-    
+
+    private void writeInstrument(Track track, float freq, long tick, int channel, int instrument) throws InvalidMidiDataException {
+        ShortMessage message = new ShortMessage();
+        message.setMessage(ShortMessage.PROGRAM_CHANGE | channel, instrument, 0);
+        track.add(new MidiEvent(message, tick));
+    }
 }

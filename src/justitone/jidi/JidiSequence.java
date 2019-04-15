@@ -55,6 +55,7 @@ public class JidiSequence {
     
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
         Event last = null;
+        int startInstrument = state.instrument;
         
         for (Event e : sequence.contents()) {
             last = e;
@@ -86,6 +87,12 @@ public class JidiSequence {
             else if (e instanceof Event.Modulation) {
                 state = state.multiplyFreq(((Event.Modulation) e).ratio());
             }
+            else if (e instanceof Event.Instrument) {
+                Event.Instrument i = (Event.Instrument) e;
+                track.add(new JidiEvent.Instrument(tick, i.instrument, i.tokenPos));
+                
+                state = state.changeInstrument(((Event.Instrument) e).instrument);
+            }
             else if (e instanceof Event.SubSequence) {
                 Event.SubSequence sub = (Event.SubSequence) e;
                 loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
@@ -99,8 +106,13 @@ public class JidiSequence {
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
         }
         
+        
         if(last != null && noteOn) {
-            track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), last.tokenPos));
+            track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue(), null));
+        }
+        
+        if(state.instrument != startInstrument) {
+            track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), startInstrument, null));
         }
     }
     
@@ -123,24 +135,39 @@ public class JidiSequence {
     }
     
     private class State {
-        final BigFraction lengthMultiplier;
-        final BigFraction freqMultiplier;
+        BigFraction lengthMultiplier;
+        BigFraction freqMultiplier;
+        int instrument;
         
-        public State(BigFraction lengthMultiplier, BigFraction freqMultiplier) {
+        public State(BigFraction lengthMultiplier, BigFraction freqMultiplier, int instrument) {
             this.lengthMultiplier = lengthMultiplier;
             this.freqMultiplier = freqMultiplier;
         }
         
+        public State(State state) {
+            this(state.lengthMultiplier, state.freqMultiplier, state.instrument);
+        }
+        
         public State() {
-            this(BigFraction.ONE, BigFraction.ONE);
+            this(BigFraction.ONE, BigFraction.ONE, 0);
         }
         
         public State multiplyLength(BigFraction multiplier) {
-            return new State(lengthMultiplier.multiply(multiplier), freqMultiplier);
+            State state = new State(this);
+            state.lengthMultiplier = lengthMultiplier.multiply(multiplier);
+            return state;
         }
         
         public State multiplyFreq(BigFraction multiplier) {
-            return new State(lengthMultiplier, freqMultiplier.multiply(multiplier));
+            State state = new State(this);
+            state.freqMultiplier = freqMultiplier.multiply(multiplier);
+            return state;
+        }
+        
+        public State changeInstrument(int instrument) {
+            State state = new State(this);
+            state.instrument = instrument;
+            return state;
         }
     }
 }
