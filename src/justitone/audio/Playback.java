@@ -131,8 +131,4 @@ public class Playback implements Runnable {
 
     //     AudioSystem.write(inputStream, AudioFileFormat.Type.WAVE, new File("justitone output.wav"));
     // }
-
-    // private static void play(SourceDataLine line, Note Note, int tempo) {
-    //     line.write(Note.sin(tempo), 0, Note.samples(tempo) * 2);
-    // }
 }

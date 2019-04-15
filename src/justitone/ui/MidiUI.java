@@ -12,10 +12,11 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
@@ -42,68 +43,72 @@ public class MidiUI extends JPanel {
         textArea = new JTextArea("120: 3/2[* [:1 :2 :3] ]");
         textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
-        JButton play = new JButton("Play");
+        JCheckBox midiPlayback = new JCheckBox("midi");
+
+        JButton play = new JButton("play");
         play.addActionListener(a -> {
-            queue.add(new Message.SetSequence(new JidiSequence(reader.parse(textArea.getText()), 768)));
-            queue.add(new Message.Play());
+            if (midiPlayback.isSelected()) {
+                play.setEnabled(false);
+                try {
+                    Song song = reader.parse(textArea.getText());
+                    
+                    JidiSequence jidiSeq = new JidiSequence(song, 768);
+                    
+                    Midi midi = new Midi();
+                    
+                    Sequence midiSeq = midi.jidiToMidi(jidiSeq, 2f);
 
-            // play.setEnabled(false);
-            // try {
-            //     Song song = reader.parse(textArea.getText());
-                
-            //     JidiSequence jidiSeq = new JidiSequence(song, 768);
-                
-            //     Midi midi = new Midi();
-                
-            //     Sequence midiSeq = midi.jidiToMidi(jidiSeq, 2f);
+                    Sequencer sequencer = MidiSystem.getSequencer();
+                    if (sequencer == null) {
+                        System.err.println("Sequencer device not supported");
+                        return;
+                    }
+                    
+                    Highlighter highlighter = textArea.getHighlighter();
 
-            //     Sequencer sequencer = MidiSystem.getSequencer();
-            //     if (sequencer == null) {
-            //         System.err.println("Sequencer device not supported");
-            //         return;
-            //     }
-                
-            //     Highlighter highlighter = textArea.getHighlighter();
+                    sequencer.setSequence(midiSeq);
+                    
+                    Runnable watchMidi = () -> {
+                        try {
+                            sequencer.open();
+                            sequencer.start();
+                            
+                            while(true) {
+                                if(sequencer.isRunning()) {
+                                    try {
+                                        setHighlights(highlighter, sequencer, jidiSeq);
+                                        
+                                        Thread.sleep(1000/60);
+                                    } catch(InterruptedException ignore) {
+                                        break;
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                            
+                            highlighter.removeAllHighlights();
+                            
+                            sequencer.stop();
+                            sequencer.close();
+                        } catch (MidiUnavailableException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    };
+                    
+                    new Thread(watchMidi).start();
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                }
 
-            //     sequencer.setSequence(midiSeq);
-                
-            //     Runnable watchMidi = () -> {
-            //         try {
-            //             sequencer.open();
-            //             sequencer.start();
-                        
-            //             while(true) {
-            //                 if(sequencer.isRunning()) {
-            //                     try {
-            //                         setHighlights(highlighter, sequencer, jidiSeq);
-                                    
-            //                         Thread.sleep(1000/60);
-            //                     } catch(InterruptedException ignore) {
-            //                         break;
-            //                     }
-            //                 } else {
-            //                     break;
-            //                 }
-            //             }
-                        
-            //             highlighter.removeAllHighlights();
-                        
-            //             sequencer.stop();
-            //             sequencer.close();
-            //         } catch (MidiUnavailableException e) {
-            //             // TODO Auto-generated catch block
-            //             e.printStackTrace();
-            //         }
-            //     };
-                
-            //     new Thread(watchMidi).start();
-            // } catch (Exception e) {
-            //     e.printStackTrace(System.out);
-            // }
-
-            // play.setEnabled(true);
+                play.setEnabled(true);
+            } else {
+                queue.add(new Message.SetSequence(new JidiSequence(reader.parse(textArea.getText()), 768)));
+                queue.add(new Message.Play());
+            }
         });
-        JButton stop = new JButton("Stop");
+        JButton stop = new JButton("stop");
         stop.addActionListener(a -> {
             try {
                 queue.add(new Message.Stop());
@@ -111,13 +116,9 @@ public class MidiUI extends JPanel {
                 e.printStackTrace(System.out);
             }
         });
-        JSplitPane transport = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, play, stop);
-        transport.setEnabled(false);
-        transport.setResizeWeight(.5d);
-        transport.setDividerSize(0);
 
-        JButton save = new JButton("save");
-        save.addActionListener(a -> {
+        JButton exportMidi = new JButton("export midi");
+        exportMidi.addActionListener(a -> {
             try {
                 Song song = reader.parse(textArea.getText());
                 
@@ -133,10 +134,22 @@ public class MidiUI extends JPanel {
                 e.printStackTrace(System.out);
             }
         });
+        JButton exportAudio = new JButton("export audio");
+        exportAudio.addActionListener(a -> {
+            // todo
+        });
+
+        JToolBar toolbar = new JToolBar();
+        toolbar.setFloatable(false);
+        toolbar.add(play);
+        toolbar.add(stop);
+        toolbar.add(midiPlayback);
+        toolbar.addSeparator();
+        toolbar.add(exportMidi);
+        toolbar.add(exportAudio);
 
         setLayout(new BorderLayout());
-        add(BorderLayout.SOUTH, transport);
-        add(BorderLayout.NORTH, save);
+        add(BorderLayout.NORTH, toolbar);
         add(BorderLayout.CENTER, textArea);
     }
     
