@@ -7,6 +7,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import justitone.jidi.JidiSequence;
@@ -74,16 +76,22 @@ public class Playback implements Runnable {
                         int e = 0;
                         for (JidiEvent event : track.events) {
                             if (event instanceof JidiEvent.Pitch) {
-                                JidiEvent.Pitch note = (JidiEvent.Pitch)event;
+                                JidiEvent.Pitch note = (JidiEvent.Pitch) event;
+                                
                                 float start = ticksToSeconds(note.tick - tick - offset, sequence.bpm, sequence.ppm);
                                 float end;
-                                if (e + 1 < track.events.size()) {
-                                    end = ticksToSeconds(track.events.get(e + 1).tick - tick - offset, sequence.bpm, sequence.ppm);
+                                
+                                Optional<JidiEvent> nextEvent = nextNoteEvent(track.events, e + 1);
+                                
+                                if (nextEvent.isPresent()) {
+                                    end = ticksToSeconds(nextEvent.get().tick - tick - offset, sequence.bpm, sequence.ppm);
                                 } else {
                                     end = ticksToSeconds(length, sequence.bpm, sequence.ppm);
                                 }
+                                
                                 int startSample = Math.max(0, (int) Math.ceil(start * sampleRate));
                                 int endSample = Math.min(bufSize, (int) Math.floor(end * sampleRate) + 1);
+                                
                                 for (int i = startSample; i < endSample; i++) {
                                     short current = buf.getShort(i * 2);
                                     float phase = 2 * (float)Math.PI * note.freq * ((float)i / sampleRate - start);
@@ -108,6 +116,14 @@ public class Playback implements Runnable {
         }
 
         line.close();
+    }
+    
+    //handle note on later when pitch and note on are both handled properly
+    Optional<JidiEvent> nextNoteEvent(List<JidiEvent> events, int from) {
+        return events.subList(from, events.size())
+                     .stream()
+                     .filter(e -> e instanceof JidiEvent.NoteOff)
+                     .findFirst();
     }
 
     static float ticksToSeconds(float tick, float bpm, float ppm) {
