@@ -24,7 +24,7 @@ public class Playback implements Runnable {
     JidiSequence sequence;
     boolean running = true;
     boolean playing = false;
-    int tick = 0;
+    long tick = 0;
     float offset = 0;
 
     public Playback(ConcurrentLinkedQueue<Message> queue) {
@@ -56,12 +56,13 @@ public class Playback implements Runnable {
             Message message;
             while ((message = queue.poll()) != null) {
                 if (message instanceof Message.SetSequence) {
-                    sequence = ((Message.SetSequence)message).sequence;
+                    sequence = ((Message.SetSequence) message).sequence;
                 } else if (message instanceof Message.Play) {
                     playing = true;
                 } else if (message instanceof Message.Stop) {
                     playing = false;
-                    tick = 0;
+                } else if (message instanceof Message.SetTick) {
+                    tick = ((Message.SetTick) message).tick;
                 }
             }
 

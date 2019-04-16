@@ -105,10 +105,36 @@ public class MidiUI extends JPanel {
 
                 play.setEnabled(true);
             } else {
+                queue.add(new Message.Stop());
                 queue.add(new Message.SetSequence(new JidiSequence(reader.parse(textArea.getText()), 768)));
+                queue.add(new Message.SetTick(0));
                 queue.add(new Message.Play());
             }
         });
+        JButton playFromCursor = new JButton("play from cursor");
+        playFromCursor.addActionListener(a -> {
+            int cursorPos = textArea.getCaretPosition();
+         
+            JidiSequence sequence = new JidiSequence(reader.parse(textArea.getText()), 768);
+            
+            JidiEvent.Token event = 
+                    sequence.tracks.stream()
+                                   .flatMap(t -> t.events.stream() .filter(e -> e instanceof JidiEvent.Token))
+                                   .map(e -> (JidiEvent.Token) e)
+                                   .filter(e -> e.start() < cursorPos)
+                                   .max((e1, e2) -> (int) (e1.start() - e2.start()))
+                                   .get();
+            
+            long tick = 0;
+            
+            if (event != null) tick = event.tick;
+            
+            queue.add(new Message.Stop());
+            queue.add(new Message.SetSequence(new JidiSequence(reader.parse(textArea.getText()), 768)));
+            queue.add(new Message.SetTick(tick));
+            queue.add(new Message.Play());
+        });
+        
         JButton stop = new JButton("stop");
         stop.addActionListener(a -> {
             try {
@@ -143,6 +169,7 @@ public class MidiUI extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         toolbar.add(play);
+        toolbar.add(playFromCursor);
         toolbar.add(stop);
         toolbar.add(midiPlayback);
         toolbar.addSeparator();
@@ -153,6 +180,8 @@ public class MidiUI extends JPanel {
         add(BorderLayout.NORTH, toolbar);
         add(BorderLayout.CENTER, textArea);
     }
+    
+    
     
     public void setHighlights(Highlighter highlighter, Sequencer sequencer, JidiSequence jidiSeq) {
         long tick = sequencer.getTickPosition();

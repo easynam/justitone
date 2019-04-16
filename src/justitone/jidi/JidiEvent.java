@@ -69,5 +69,13 @@ public abstract class JidiEvent {
             this.tick = tick;
             this.tokens = tokens;
         }
+        
+        public int start() {
+            return tokens.stream().mapToInt(t -> t.start).min().orElse(0);
+        }
+        
+        public int stop() {
+            return tokens.stream().mapToInt(t -> t.stop).max().orElse(0);
+        }
     }
 }

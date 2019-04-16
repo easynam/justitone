@@ -11,4 +11,11 @@ public abstract class Message {
     }
     public static class Play extends Message {}
     public static class Stop extends Message {}
+    
+    public static class SetTick extends Message {
+        public long tick;
+        public SetTick(long tick) {
+            this.tick = tick;
+        }
+    }
 }
