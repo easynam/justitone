@@ -120,7 +120,7 @@ public class Playback implements Runnable {
     }
     
     //handle note on later when pitch and note on are both handled properly
-    Optional<JidiEvent> nextNoteEvent(List<JidiEvent> events, int from) {
+    private Optional<JidiEvent> nextNoteEvent(List<JidiEvent> events, int from) {
         return events.subList(from, events.size())
                      .stream()
                      .filter(e -> e instanceof JidiEvent.NoteOff)
@@ -129,6 +129,22 @@ public class Playback implements Runnable {
 
     static float ticksToSeconds(float tick, float bpm, float ppm) {
         return 4 * 60 * (tick / ppm) / bpm;
+    }
+    
+    public long getTick() {
+        return tick;
+    }
+
+    public JidiSequence getSequence() {
+        return sequence;
+    }
+    
+    public boolean isRunning() {
+        return running;
+    }
+
+    public boolean isPlaying() {
+        return playing;
     }
 
     // public static void save(Track channel) throws IOException {

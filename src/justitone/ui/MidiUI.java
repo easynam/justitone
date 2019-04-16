@@ -39,7 +39,11 @@ public class MidiUI extends JPanel {
     JTextArea textArea;
 
     public MidiUI(Reader reader) {
-        ConcurrentLinkedQueue<Message> queue = Playback.start();
+        ConcurrentLinkedQueue<Message> queue = new ConcurrentLinkedQueue<>();
+        
+        Playback playback = new Playback(queue);
+        
+        new Thread(playback).start();
 
         textArea = new JTextArea("120: 3/2[* [:1 :2 :3] ]");
         textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
@@ -77,7 +81,7 @@ public class MidiUI extends JPanel {
                             while(true) {
                                 if(sequencer.isRunning()) {
                                     try {
-                                        setHighlights(highlighter, sequencer, jidiSeq);
+                                        setHighlights(highlighter, sequencer.getTickPosition(), jidiSeq);
                                         
                                         Thread.sleep(1000/60);
                                     } catch(InterruptedException ignore) {
@@ -123,7 +127,7 @@ public class MidiUI extends JPanel {
                                    .map(e -> (JidiEvent.Token) e)
                                    .filter(e -> e.start() < cursorPos)
                                    .max((e1, e2) -> (int) (e1.start() - e2.start()))
-                                   .get();
+                                   .orElse(null);
             
             long tick = 0;
             
@@ -179,13 +183,31 @@ public class MidiUI extends JPanel {
         setLayout(new BorderLayout());
         add(BorderLayout.NORTH, toolbar);
         add(BorderLayout.CENTER, textArea);
+        
+        Runnable watchAudio = () -> {
+            Highlighter highlighter = textArea.getHighlighter();
+            
+            while(true) {
+                if(playback.isRunning()) {
+                    try {
+                        if (playback.isPlaying()) setHighlights(highlighter, playback.getTick(), playback.getSequence());
+                        
+                        Thread.sleep(1000/60);
+                    } catch(InterruptedException ignore) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        };
+        
+        new Thread(watchAudio).start();
     }
     
     
     
-    public void setHighlights(Highlighter highlighter, Sequencer sequencer, JidiSequence jidiSeq) {
-        long tick = sequencer.getTickPosition();
-        
+    public void setHighlights(Highlighter highlighter, long tick, JidiSequence jidiSeq) {
         List<TokenPos> tokens = new ArrayList<>();
         
         for (JidiTrack track : jidiSeq.tracks) {
