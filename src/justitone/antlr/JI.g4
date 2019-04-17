@@ -1,7 +1,8 @@
 grammar JI;
 DIGIT: [0-9];
 
-//LABEL: [a-zA-Z][a-zA-Z0-9_]*;
+DEF: 'def';
+LABEL: [a-zA-Z][a-zA-Z0-9_]*;
 
 MOD: '^';
 REST: '_';
@@ -12,12 +13,16 @@ CLOSE_TUPLE: ']';
 OPEN_BAR: '{';
 OPEN_MOD_GROUP: '{^';
 CLOSE_BAR: '}';
+OPEN_BRACKET: '(';
+CLOSE_BRACKET: ')';
 REPEAT: '*';
 PLUS: '+';
 COLON: ':';
 COMMA: ',';
 ANGLE_BRACKET: '>';
 JUMP: '<';
+
+identifier: LABEL;
 
 integer: DIGIT+;
 
@@ -42,6 +47,7 @@ event: (length=fraction)? pitch  #eventNote
      | ('.' pitch)+              #eventChord
      | MOD pitch                 #eventModulation
      | '@' integer               #eventInstrument
+     | (length=fraction)? pitch? identifier #eventDef
      ;
 
 polySequence: sequence (COMMA sequence)*;
@@ -52,7 +58,9 @@ sequenceItem: event (REPEAT repeats=integer)?                     #eventRepeat
      
 sequence: WS* (sequenceItem WS+)* sequenceItem? WS*;
 
-song: tempo=integer COLON WS* sequence EOF;
+song: (def WS+)* tempo=integer COLON WS* sequence EOF;
+
+def: OPEN_BRACKET WS* DEF WS+ identifier WS+ event WS* CLOSE_BRACKET;
 
 COMMENT
     : '/*' .*? '*/' -> channel(HIDDEN)

@@ -1,7 +1,9 @@
 package justitone.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,9 +23,11 @@ import justitone.TokenPos;
 import justitone.antlr.JIBaseVisitor;
 import justitone.antlr.JILexer;
 import justitone.antlr.JIParser;
+import justitone.antlr.JIParser.EventContext;
 
 public class Reader {
     final SongVisitor songVisitor = new SongVisitor();
+    final DefVisitor defVisitor = new DefVisitor();
     final SequenceVisitor sequenceVisitor = new SequenceVisitor();
     final PolySequenceVisitor polySequenceVisitor = new PolySequenceVisitor();
     final SequenceItemVisitor sequenceItemVisitor = new SequenceItemVisitor();
@@ -32,7 +36,11 @@ public class Reader {
     final PitchVisitor pitchVisitor = new PitchVisitor();
     final IntegerVisitor integerVisitor = new IntegerVisitor();
 
+    final Map<String, EventContext> defines = new HashMap<>();
+    
     public Song parse(String source) {
+        defines.clear();
+        
         CharStream charStream = CharStreams.fromString(source);
         JILexer lexer = new JILexer(charStream);
         TokenStream tokens = new CommonTokenStream(lexer);
@@ -50,10 +58,22 @@ public class Reader {
     class SongVisitor extends JIBaseVisitor<Song> {
         @Override
         public Song visitSong(JIParser.SongContext ctx) {
+            ctx.def().forEach(def -> def.accept(defVisitor));
             int tempo = ctx.tempo.accept(integerVisitor);
             Sequence seq = ctx.sequence().accept(sequenceVisitor);
             
             return new Song(seq, tempo);
+        }
+    }
+    
+    class DefVisitor extends JIBaseVisitor<Void> {
+        @Override
+        public Void visitDef(JIParser.DefContext ctx) {
+            String identifier = ctx.identifier().getText();
+            
+            defines.put(identifier, ctx.event());
+
+            return null;
         }
     }
     
@@ -250,6 +270,16 @@ public class Reader {
             int instrument = ctx.integer().accept(integerVisitor) - 1;
 
             return new Event.Instrument(instrument).withTokenPos(tokenPos(ctx));
+        }
+        
+        @Override
+        public Event visitEventDef(JIParser.EventDefContext ctx) {
+            BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
+            
+            String identifier = ctx.identifier().getText();
+
+            return new Event.Bar(length, ratio, new Sequence(defines.get(identifier).accept(eventVisitor).withTokenPos(tokenPos(ctx))));
         }
     }
     

@@ -45,7 +45,7 @@ public class MidiUI extends JPanel {
         
         new Thread(playback).start();
 
-        textArea = new JTextArea("120: 3/2[* [:1 :2 :3] ]");
+        textArea = new JTextArea("(def m3 '6) (def p5 '3) 120: [:1 m3 p5]");
         textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
         JCheckBox midiPlayback = new JCheckBox("midi");
