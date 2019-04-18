@@ -17,12 +17,13 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
-import javax.swing.text.Highlighter.Highlight;
 import javax.swing.text.Highlighter.HighlightPainter;
 
 import justitone.audio.Playback;
@@ -51,6 +52,9 @@ public class MidiUI extends JPanel {
         textArea = new JTextArea("(def m3 '6) (def p5 '3) 120: [:1 m3 p5]");
         textArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
+        JScrollPane scroll = new JScrollPane(textArea);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        
         JCheckBox midiPlayback = new JCheckBox("midi");
 
         JButton play = new JButton("play");
@@ -185,7 +189,7 @@ public class MidiUI extends JPanel {
 
         setLayout(new BorderLayout());
         add(BorderLayout.NORTH, toolbar);
-        add(BorderLayout.CENTER, textArea);
+        add(BorderLayout.CENTER, scroll);
         
         Runnable watchAudio = () -> {
             Highlighter highlighter = textArea.getHighlighter();
