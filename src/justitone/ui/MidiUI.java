@@ -1,6 +1,7 @@
 package justitone.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.Highlight;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 import justitone.audio.Playback;
 import justitone.audio.Message;
@@ -205,7 +208,8 @@ public class MidiUI extends JPanel {
         new Thread(watchAudio).start();
     }
     
-    
+    private List<Object> highlights = new ArrayList<>();
+    private HighlightPainter playing = new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
     
     public void setHighlights(Highlighter highlighter, long tick, JidiSequence jidiSeq) {
         List<TokenPos> tokens = new ArrayList<>();
@@ -226,11 +230,13 @@ public class MidiUI extends JPanel {
             tokens.addAll(last);
         }
         
-        highlighter.removeAllHighlights();
+        highlights.forEach(h -> highlighter.removeHighlight(h));
+        
+        highlights.clear();
         
         for (TokenPos token : tokens) {
             try {
-                highlighter.addHighlight(token.start, token.stop+1, DefaultHighlighter.DefaultPainter);
+                highlights.add(highlighter.addHighlight(token.start, token.stop+1, playing));
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
