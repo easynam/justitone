@@ -37,6 +37,7 @@ pitch: MINUS? COLON ratio=fraction         #pitchRatio
      ;
      
 event: (length=fraction)? pitch  #eventNote
+     | (length=fraction) pitch?  #eventNote
      | (length=fraction)? REST   #eventRest
      | (length=fraction)? MINUS  #eventHold
      | (length=fraction)? pitch? OPEN_TUPLE polySequence CLOSE_TUPLE        #eventTuple

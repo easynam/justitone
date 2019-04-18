@@ -136,7 +136,7 @@ public class Reader {
         @Override
         public Event visitEventNote(JIParser.EventNoteContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
-            BigFraction ratio = ctx.pitch().accept(pitchVisitor);
+            BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
             
             return new Event.Note(length, ratio).withTokenPos(tokenPos(ctx));
         }
