@@ -12,7 +12,7 @@ public class Sequence {
     public Sequence() {
         events = new ArrayList<>();
     }
-    
+
     public Sequence(Sequence sequence) {
         events = new ArrayList<>();
         events.addAll(sequence.events);
@@ -22,7 +22,7 @@ public class Sequence {
         this.events = new ArrayList<>();
         this.events.addAll(events);
     }
-    
+
     public Sequence(Event... events) {
         this.events = new ArrayList<>();
         this.events.addAll(Arrays.asList(events));
@@ -31,14 +31,14 @@ public class Sequence {
     public void addEvent(Event e) {
         events.add(e);
     }
-    
+
     public BigFraction length() {
         return events.stream()
                      .map(e -> e.length())
                      .reduce(BigFraction::add)
                      .orElse(BigFraction.ZERO);
     }
-    
+
     public List<Event> contents() {
         return events;
     }

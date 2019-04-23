@@ -37,20 +37,20 @@ public class Reader {
     final IntegerVisitor integerVisitor = new IntegerVisitor();
 
     final Map<String, EventContext> defines = new HashMap<>();
-    
+
     public Song parse(String source) {
         defines.clear();
-        
+
         CharStream charStream = CharStreams.fromString(source);
         JILexer lexer = new JILexer(charStream);
         TokenStream tokens = new CommonTokenStream(lexer);
         JIParser parser = new JIParser(tokens);
-        
+
         Song traverseResult = songVisitor.visit(parser.song());
 
         return traverseResult;
     }
-    
+
     public static TokenPos tokenPos(ParserRuleContext ctx) {
         return new TokenPos(ctx.start.getStartIndex(), ctx.stop.getStopIndex());
     }
@@ -61,27 +61,27 @@ public class Reader {
             ctx.def().forEach(def -> def.accept(defVisitor));
             int tempo = ctx.tempo.accept(integerVisitor);
             Sequence seq = ctx.sequence().accept(sequenceVisitor);
-            
+
             return new Song(seq, tempo);
         }
     }
-    
+
     class DefVisitor extends JIBaseVisitor<Void> {
         @Override
         public Void visitDef(JIParser.DefContext ctx) {
             String identifier = ctx.identifier().getText();
-            
+
             defines.put(identifier, ctx.event());
 
             return null;
         }
     }
-    
+
     class SequenceVisitor extends JIBaseVisitor<Sequence> {
         @Override
         public Sequence visitSequence(JIParser.SequenceContext ctx) {
             Sequence seq = new Sequence();
-            
+
             ctx.sequenceItem().stream()
                               .map(event -> event.accept(sequenceItemVisitor))
                               .forEach(f -> f.accept(seq));
@@ -96,11 +96,11 @@ public class Reader {
             List<Sequence> sequences = ctx.sequence().stream()
                                                      .map(event -> event.accept(sequenceVisitor))
                                                      .collect(Collectors.toList());
-    
+
             return sequences;
         }
     }
-    
+
     class SequenceItemVisitor extends JIBaseVisitor<Consumer<Sequence>> {
         public Consumer<Sequence> visitEventRepeat(JIParser.EventRepeatContext ctx) {
             int repeats = ctx.repeats == null ? 1 : ctx.repeats.accept(integerVisitor);
@@ -114,7 +114,7 @@ public class Reader {
                 }
             });
         }
-        
+
         public Consumer<Sequence> visitJump(JIParser.JumpContext ctx) {
             BigFraction length = ctx.lengthMultiplier == null ? BigFraction.ONE : ctx.lengthMultiplier.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
@@ -123,9 +123,9 @@ public class Reader {
             return (s -> {
                 for (int i = 0; i < repeats; i++) {
                     Sequence bar = new Sequence(s);
-                    
+
                     s.addEvent(new Event.Bar(length, ratio, bar));
-                    
+
                     s = bar;
                 }
             });
@@ -137,7 +137,7 @@ public class Reader {
         public Event visitEventNote(JIParser.EventNoteContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
-            
+
             return new Event.Note(length, ratio).withTokenPos(tokenPos(ctx));
         }
 
@@ -160,11 +160,11 @@ public class Reader {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
             List<Sequence> sequences = ctx.polySequence().accept(polySequenceVisitor);
-            
+
             List<SubSequence> tuples = sequences.stream()
                                                 .map(s -> new Event.Tuple(length, ratio, s))
                                                 .collect(Collectors.toList());
-            
+
             return new Event.Poly(ratio, tuples);
         }
 
@@ -176,18 +176,18 @@ public class Reader {
 
             Sequence start = ctx.start == null ? new Sequence() : ctx.start.accept(sequenceVisitor);
             Sequence loop = ctx.loop.accept(sequenceVisitor);
-            
+
             if (loop.length().equals(BigFraction.ZERO)) {
                 throw new RuntimeException("Empty loop in fill at "+ ctx.loop.start.getStartIndex());
             }
-            
+
             if (start.length().compareTo(length) >= 0) {
                 return new Event.Bar(start).chop(length);
             }
-            
+
             BigFraction total = start.length();
             Sequence seq = new Sequence();
-            
+
             System.out.println("CREATED SEQ------"+seq);
 
             seq.addEvent(new Event.Bar(start));
@@ -200,13 +200,13 @@ public class Reader {
                     BigFraction toLength = length.subtract(prev);
 
                     seq.addEvent(new Event.Bar(loop).chop(toLength));
-                    
+
                     break;
                 }
 
                 seq.addEvent(new Event.Bar(loop));
             }
-            
+
             return new Event.Bar(BigFraction.ONE, ratio, seq);
         }
 
@@ -219,7 +219,7 @@ public class Reader {
             List<SubSequence> bars = sequences.stream()
                                               .map(s -> new Event.Bar(length, ratio, s))
                                               .collect(Collectors.toList());
-            
+
             return new Event.Poly(ratio, bars);
         }
 
@@ -235,26 +235,26 @@ public class Reader {
                                                                 .collect(Collectors.toList()))
                                               .map(s -> new Event.Bar(length, ratio, new Sequence(s)))
                                               .collect(Collectors.toList());
-            
+
             return new Event.Poly(ratio, bars);
         }
-        
+
         @Override
         public Event visitEventChord(JIParser.EventChordContext ctx) {
             Event event = ctx.event() == null ? new Event.Note().withTokenPos(tokenPos(ctx)) : ctx.event().accept(eventVisitor).withTokenPos(tokenPos(ctx));
             BigFraction ratio = BigFraction.ONE;
-            
+
             List<BigFraction> pitches = ctx.pitch().stream()
                                                    .map(p -> p.accept(pitchVisitor))
                                                    .collect(Collectors.toList());
-            
+
             List<SubSequence> events = new ArrayList<>();
-            
+
             for (BigFraction p : pitches) {
               ratio = ratio.multiply(p);
               events.add(new Event.Bar(BigFraction.ONE, ratio, new Sequence(event)));
           }
-            
+
             return new Event.Poly(event.ratio(), events);
         }
 
@@ -264,25 +264,25 @@ public class Reader {
 
             return new Event.Modulation(ratio).withTokenPos(tokenPos(ctx));
         }
-        
+
         @Override
         public Event visitEventInstrument(JIParser.EventInstrumentContext ctx) {
             int instrument = ctx.integer().accept(integerVisitor) - 1;
 
             return new Event.Instrument(instrument).withTokenPos(tokenPos(ctx));
         }
-        
+
         @Override
         public Event visitEventDef(JIParser.EventDefContext ctx) {
             BigFraction length = ctx.length == null ? BigFraction.ONE : ctx.length.accept(fractionVisitor);
             BigFraction ratio = ctx.pitch() == null ? BigFraction.ONE : ctx.pitch().accept(pitchVisitor);
-            
+
             String identifier = ctx.identifier().getText();
 
             return new Event.Bar(length, ratio, new Sequence(defines.get(identifier).accept(eventVisitor).withTokenPos(tokenPos(ctx))));
         }
     }
-    
+
     class PitchVisitor extends JIBaseVisitor<BigFraction> {
         BigFraction invert(BigFraction ratio, boolean shouldInvert) {
             if (shouldInvert) {
@@ -290,23 +290,23 @@ public class Reader {
             }
             else return ratio;
         }
-        
+
         @Override
         public BigFraction visitPitchRatio(JIParser.PitchRatioContext ctx) {
             boolean invert = ctx.MINUS() != null;
-            
+
             return invert(ctx.ratio.accept(fractionVisitor), invert);
         }
-        
+
         @Override
         public BigFraction visitPitchSuperparticular(JIParser.PitchSuperparticularContext ctx) {
             int numerator = ctx.integer().accept(integerVisitor);
             boolean invert = ctx.MINUS() != null;
-            
+
             if(numerator <= 1) {
                 throw new RuntimeException("Superparticular numerator cant be less than 2");
             }
-            
+
             return invert(new BigFraction(numerator, numerator - 1), invert);
         }
 

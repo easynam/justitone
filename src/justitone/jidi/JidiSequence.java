@@ -25,7 +25,7 @@ public class JidiSequence {
     public JidiSequence(Song song, int ppq) {
         bpm = song.bpm;
         ppm = ppq*4;
-        
+
         tracks = new ArrayList<>();
         used = new HashMap<>();
 
@@ -40,9 +40,9 @@ public class JidiSequence {
                                                .findFirst();
         if (maybeTrack.isPresent()) {
             JidiTrack track = maybeTrack.get();
-            
+
             used.get(track).allocate(start, end);
-            
+
             return track;
         }
         else {
@@ -54,17 +54,17 @@ public class JidiSequence {
             return track;
         }
     }
-    
+
     public void loadSequence(State state, BigFraction currentPos, boolean noteOn, Sequence sequence, JidiTrack track) {
         track.events.stream().filter(e -> e instanceof JidiEvent.Instrument).collect(Collectors.toList());
         track.add(new JidiEvent.Instrument(currentPos.multiply(ppm).intValue(), state.instrument));
-        
+
         for (Event e : sequence.contents()) {
             long tick = currentPos.multiply(ppm).longValue();
 
             if (e instanceof Event.Note) {
                 track.add(new JidiEvent.Token(tick, e.tokens));
-                
+
                 if (noteOn) {
                     track.add(new JidiEvent.NoteOff(tick));
                 }
@@ -73,12 +73,12 @@ public class JidiSequence {
 
                 track.add(new JidiEvent.Pitch(tick, freq));
                 track.add(new JidiEvent.NoteOn(tick));
-                
+
                 noteOn = true;
             }
             else if (e instanceof Event.Rest) {
                 track.add(new JidiEvent.Token(tick, e.tokens));
-                
+
                 if (noteOn) {
                     track.add(new JidiEvent.NoteOff(tick));
                 }
@@ -95,17 +95,17 @@ public class JidiSequence {
                 if (noteOn) {
                     track.add(new JidiEvent.NoteOff(tick));
                 }
-                
+
                 Event.Instrument i = (Event.Instrument) e;
                 track.add(new JidiEvent.Instrument(tick, i.instrument));
-                
+
                 state = state.changeInstrument(((Event.Instrument) e).instrument);
-                
+
                 noteOn = false;
             }
             else if (e instanceof Event.SubSequence) {
                 Event.SubSequence sub = (Event.SubSequence) e;
-                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
                              currentPos, noteOn, sub.sequence(), track);
             }
             else if (e instanceof Event.Poly) {
@@ -117,62 +117,62 @@ public class JidiSequence {
         }
 
         long tick = currentPos.multiply(ppm).longValue();
-        
+
         track.add(new JidiEvent.Token(tick, Collections.emptyList()));
         if(noteOn) {
             track.add(new JidiEvent.NoteOff(currentPos.multiply(ppm).intValue()));
         }
     }
-    
+
     public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
         Event.SubSequence sub = subs.get(0);
-        
-        loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+
+        loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
                      currentPos, noteOn, subs.get(0).sequence(), track);
-        
+
         if (subs.size() > 1) {
             for (int i = 1; i < subs.size(); i++) {
                 sub = subs.get(i);
-                
+
                 BigFraction end = currentPos.add(sub.length().multiply(state.lengthMultiplier));
-                
-                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()), 
+
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
                              currentPos, false, sub.sequence(), allocateTrack(currentPos, end));
             }
         }
     }
-    
+
     private class State {
         BigFraction lengthMultiplier;
         BigFraction freqMultiplier;
         int instrument;
-        
+
         public State(BigFraction lengthMultiplier, BigFraction freqMultiplier, int instrument) {
             this.lengthMultiplier = lengthMultiplier;
             this.freqMultiplier = freqMultiplier;
             this.instrument = instrument;
         }
-        
+
         public State(State state) {
             this(state.lengthMultiplier, state.freqMultiplier, state.instrument);
         }
-        
+
         public State() {
             this(BigFraction.ONE, BigFraction.ONE, 0);
         }
-        
+
         public State multiplyLength(BigFraction multiplier) {
             State state = new State(this);
             state.lengthMultiplier = lengthMultiplier.multiply(multiplier);
             return state;
         }
-        
+
         public State multiplyFreq(BigFraction multiplier) {
             State state = new State(this);
             state.freqMultiplier = freqMultiplier.multiply(multiplier);
             return state;
         }
-        
+
         public State changeInstrument(int instrument) {
             State state = new State(this);
             state.instrument = instrument;

@@ -5,7 +5,7 @@ public class Song {
         this.sequence = sequence;
         this.bpm = bpm;
     }
-    
+
     public Sequence sequence;
     public int bpm;
 }

@@ -17,13 +17,13 @@ public class Test {
         Reader reader = new Reader();
 
         Song song = reader.parse("120: ^:/243 [:243 :244 :245 :246 :247 :248 :249 :250 :251 :252 :253 :254 :255 :256]");
-        
+
         JidiSequence seq = new JidiSequence(song, 768);
-        
+
         Midi midi = new Midi();
-        
+
         Sequence midiSeq = midi.jidiToMidi(seq, 2f);
-        
+
         File f = new File("midifile.mid");
         MidiSystem.write(midiSeq, 1, f);
     }
