@@ -63,13 +63,13 @@ public class JidiSequence {
             long tick = currentPos.multiply(ppm).longValue();
 
             if (e instanceof Event.Note) {
-                track.add(new JidiEvent.Token(tick, e.tokens));
+                track.add(new JidiEvent.Token(tick, e.getTokens()));
 
                 if (noteOn) {
                     track.add(new JidiEvent.NoteOff(tick));
                 }
 
-                float freq = ((Event.Note) e).ratio().multiply(state.freqMultiplier).floatValue() * 440f;
+                float freq = ((Event.Note) e).getRatio().multiply(state.freqMultiplier).floatValue() * 440f;
 
                 track.add(new JidiEvent.Pitch(tick, freq));
                 track.add(new JidiEvent.NoteOn(tick));
@@ -77,7 +77,7 @@ public class JidiSequence {
                 noteOn = true;
             }
             else if (e instanceof Event.Rest) {
-                track.add(new JidiEvent.Token(tick, e.tokens));
+                track.add(new JidiEvent.Token(tick, e.getTokens()));
 
                 if (noteOn) {
                     track.add(new JidiEvent.NoteOff(tick));
@@ -86,10 +86,10 @@ public class JidiSequence {
                 noteOn = false;
             }
             else if (e instanceof Event.Hold) {
-                track.add(new JidiEvent.Token(tick, e.tokens));
+                track.add(new JidiEvent.Token(tick, e.getTokens()));
             }
             else if (e instanceof Event.Modulation) {
-                state = state.multiplyFreq(((Event.Modulation) e).ratio());
+                state = state.multiplyFreq(((Event.Modulation) e).getRatio());
             }
             else if (e instanceof Event.Instrument) {
                 if (noteOn) {
@@ -97,20 +97,20 @@ public class JidiSequence {
                 }
 
                 Event.Instrument i = (Event.Instrument) e;
-                track.add(new JidiEvent.Instrument(tick, i.instrument));
+                track.add(new JidiEvent.Instrument(tick, i.getInstrument()));
 
-                state = state.changeInstrument(((Event.Instrument) e).instrument);
+                state = state.changeInstrument(((Event.Instrument) e).getInstrument());
 
                 noteOn = false;
             }
             else if (e instanceof Event.SubSequence) {
                 Event.SubSequence sub = (Event.SubSequence) e;
-                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
-                             currentPos, noteOn, sub.sequence(), track);
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.getRatio()),
+                             currentPos, noteOn, sub.getSequence(), track);
             }
             else if (e instanceof Event.Poly) {
                 Event.Poly poly = (Event.Poly) e;
-                loadPoly(state, currentPos, noteOn, poly.sequences, track);
+                loadPoly(state, currentPos, noteOn, poly.getSequences(), track);
             }
 
             currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier));
@@ -127,8 +127,8 @@ public class JidiSequence {
     public void loadPoly(State state, BigFraction currentPos, boolean noteOn, List<Event.SubSequence> subs, JidiTrack track) {
         Event.SubSequence sub = subs.get(0);
 
-        loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
-                     currentPos, noteOn, subs.get(0).sequence(), track);
+        loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.getRatio()),
+                     currentPos, noteOn, subs.get(0).getSequence(), track);
 
         if (subs.size() > 1) {
             for (int i = 1; i < subs.size(); i++) {
@@ -136,8 +136,8 @@ public class JidiSequence {
 
                 BigFraction end = currentPos.add(sub.length().multiply(state.lengthMultiplier));
 
-                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.ratio()),
-                             currentPos, false, sub.sequence(), allocateTrack(currentPos, end));
+                loadSequence(state.multiplyLength(sub.eventLength()).multiplyFreq(sub.getRatio()),
+                             currentPos, false, sub.getSequence(), allocateTrack(currentPos, end));
             }
         }
     }
