@@ -84,7 +84,7 @@ public class Midi {
 
         boolean noteOn = false;
 
-        for (JidiEvent e : jidiTrack.events) {
+        for (JidiEvent e : jidiTrack.getEvents()) {
             if (e instanceof JidiEvent.Pitch) {
                 if (noteOn) {
                     writeNoteOff(track, freq, e.getTick(), channel);
