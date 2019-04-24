@@ -13,13 +13,13 @@ import justitone.jidi.JidiTrack;
 
 public class Midi {
     public Sequence jidiToMidi(JidiSequence jidi, float pitchBendRange) throws InvalidMidiDataException {
-        Sequence seq = new Sequence(Sequence.PPQ, jidi.ppm/4);
+        Sequence seq = new Sequence(Sequence.PPQ, jidi.getPpm() /4);
 
         Track tempoTrack = seq.createTrack();
 
         {
             MetaMessage message = new MetaMessage();
-            message.setMessage(0x51, encodeTempo(jidi.bpm), 3);
+            message.setMessage(0x51, encodeTempo(jidi.getBpm()), 3);
             tempoTrack.add(new MidiEvent(message, 0));
         }
         {
@@ -30,7 +30,7 @@ public class Midi {
 
         int channel = 0;
 
-        for (JidiTrack jidiTrack : jidi.tracks) {
+        for (JidiTrack jidiTrack : jidi.getTracks()) {
             if (channel == 9) channel++;
             addTrack(seq, jidiTrack, pitchBendRange, channel++);
         }
