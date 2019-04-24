@@ -65,8 +65,7 @@ class Reader {
         override fun visitSequence(ctx: JIParser.SequenceContext): Sequence {
             val seq = Sequence()
 
-            ctx.sequenceItem().stream()
-                    .map { event -> event.accept(sequenceItemVisitor) }
+            ctx.sequenceItem().map { event -> event.accept(sequenceItemVisitor) }
                     .forEach { it(seq) }
 
             return seq
@@ -75,9 +74,7 @@ class Reader {
 
     internal inner class PolySequenceVisitor : JIBaseVisitor<List<Sequence>>() {
         override fun visitPolySequence(ctx: JIParser.PolySequenceContext): List<Sequence> {
-
-            return ctx.sequence()
-                    .map { event -> event.accept(sequenceVisitor) }
+            return ctx.sequence().map { event -> event.accept(sequenceVisitor) }
         }
     }
 
@@ -87,10 +84,9 @@ class Reader {
 
             val event = ctx.event().accept(eventVisitor)
 
-            return { s ->
-                for (i in 0 until repeats) {
-                    println("adding $event")
-                    s.addEvent(event)
+            return {
+                for (i in 1..repeats) {
+                    it.addEvent(event)
                 }
             }
         }
@@ -138,8 +134,7 @@ class Reader {
             val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
-            val tuples = sequences
-                    .map { s -> Event.Tuple(length, ratio, s) }
+            val tuples = sequences.map { Event.Tuple(length, ratio, it) }
 
             return Event.Poly(ratio, tuples)
         }
@@ -188,8 +183,7 @@ class Reader {
             val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
-            val bars = sequences
-                    .map { s -> Event.Bar(length, ratio, s) }
+            val bars = sequences.map { Event.Bar(length, ratio, it) }
 
             return Event.Poly(ratio, bars)
         }
@@ -199,8 +193,7 @@ class Reader {
             val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
-            val bars = sequences
-                    .map { it.events.flatMap { listOf(it, Event.Modulation(it.ratio)) } }
+            val bars = sequences.map { it.events.flatMap { e -> listOf(e, Event.Modulation(e.ratio)) } }
                     .map { Event.Bar(length, ratio, Sequence(it)) }
 
             return Event.Poly(ratio, bars)
@@ -246,11 +239,12 @@ class Reader {
     }
 
     internal inner class PitchVisitor : JIBaseVisitor<BigFraction>() {
-        fun invert(ratio: BigFraction, shouldInvert: Boolean): BigFraction {
+        private fun invert(ratio: BigFraction, shouldInvert: Boolean): BigFraction {
             return if (shouldInvert) {
                 ratio.reciprocal()
-            } else
+            } else {
                 ratio
+            }
         }
 
         override fun visitPitchRatio(ctx: JIParser.PitchRatioContext): BigFraction {
