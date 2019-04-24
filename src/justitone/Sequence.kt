@@ -33,7 +33,7 @@ class Sequence {
 
     fun length(): BigFraction {
         return events.map { e -> e.length() }
-                     .reduce{ obj, fraction -> obj.add(fraction) ?: BigFraction.ZERO
+                     .reduce{ obj, fraction -> obj.add(fraction) } ?: BigFraction.ZERO
     }
 
     fun contents(): List<Event> {
