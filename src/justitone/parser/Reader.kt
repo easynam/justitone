@@ -53,13 +53,11 @@ class Reader {
         }
     }
 
-    internal inner class DefVisitor : JIBaseVisitor<Void>() {
-        override fun visitDef(ctx: JIParser.DefContext): Void? {
+    internal inner class DefVisitor : JIBaseVisitor<Unit>() {
+        override fun visitDef(ctx: JIParser.DefContext) {
             val identifier = ctx.identifier().text
 
             defines[identifier] = ctx.event()
-
-            return null
         }
     }
 
