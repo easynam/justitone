@@ -1,3 +1,3 @@
 package justitone
 
-class TokenPos(var start: Int, var stop: Int)
+data class TokenPos(val start: Int, val stop: Int)

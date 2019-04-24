@@ -38,7 +38,7 @@ class Playback(internal var queue: ConcurrentLinkedQueue<Message>) : Runnable {
         while (isRunning) {
             while (queue.isNotEmpty()) {
                 val message = queue.poll()
-                when(message) {
+                when (message) {
                     is Message.SetSequence -> sequence = message.sequence
                     is Message.SetTick -> tick = message.tick
                     Message.Play -> isPlaying = true

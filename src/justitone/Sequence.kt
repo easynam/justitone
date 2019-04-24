@@ -1,9 +1,7 @@
 package justitone
 
 import org.apache.commons.math3.fraction.BigFraction
-
-import java.util.ArrayList
-import java.util.Arrays
+import java.util.*
 
 class Sequence {
     var events: MutableList<Event>
@@ -33,7 +31,7 @@ class Sequence {
 
     fun length(): BigFraction {
         return events.map { e -> e.length() }
-                     .reduce{ obj, fraction -> obj.add(fraction) } ?: BigFraction.ZERO
+                .reduce { obj, fraction -> obj.add(fraction) } ?: BigFraction.ZERO
     }
 
     fun contents(): List<Event> {

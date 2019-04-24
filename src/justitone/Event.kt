@@ -3,7 +3,6 @@ package justitone
 import justitone.util.div
 import justitone.util.plus
 import org.apache.commons.math3.fraction.BigFraction
-import java.util.*
 
 abstract class Event {
     val tokens: MutableList<TokenPos> = mutableListOf()
@@ -98,7 +97,7 @@ abstract class Event {
 
     data class Poly(override val ratio: BigFraction, val sequences: List<SubSequence>) : Event() {
         override fun length(): BigFraction {
-            return sequences.map{ it.length() }.max() ?: BigFraction.ZERO
+            return sequences.map { it.length() }.max() ?: BigFraction.ZERO
         }
 
         override fun chop(toLength: BigFraction): SubSequence {

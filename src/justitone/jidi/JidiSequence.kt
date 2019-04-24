@@ -12,7 +12,7 @@ class JidiSequence(song: Song, ppq: Int) {
     var tracks: MutableList<JidiTrack> = mutableListOf()
     private val used: MutableMap<JidiTrack, Periods> = mutableMapOf()
 
-    val ppm: Int =  ppq * 4;
+    val ppm: Int = ppq * 4;
     val bpm: Int = song.bpm;
 
     init {
@@ -89,7 +89,7 @@ class JidiSequence(song: Song, ppq: Int) {
                     noteOn = false
                 }
                 is Event.SubSequence -> loadSequence(state.multiplyLength(e.eventLength()).multiplyFreq(e.ratio),
-                                                     currentPos, noteOn, e.sequence, track)
+                        currentPos, noteOn, e.sequence, track)
                 is Event.Poly -> loadPoly(state, currentPos, noteOn, e.sequences, track)
             }
 
@@ -122,7 +122,7 @@ class JidiSequence(song: Song, ppq: Int) {
         }
     }
 
-    private data class State (val lengthMultiplier: BigFraction = BigFraction.ONE, val freqMultiplier: BigFraction = BigFraction.ONE, val instrument: Int = 0) {
+    private data class State(val lengthMultiplier: BigFraction = BigFraction.ONE, val freqMultiplier: BigFraction = BigFraction.ONE, val instrument: Int = 0) {
         fun multiplyLength(multiplier: BigFraction): State = copy(lengthMultiplier = lengthMultiplier * multiplier)
         fun multiplyFreq(multiplier: BigFraction): State = copy(freqMultiplier = freqMultiplier * multiplier)
     }
