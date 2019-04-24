@@ -1,15 +1,10 @@
 package justitone.midi;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MetaMessage;
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
-
 import justitone.jidi.JidiEvent;
 import justitone.jidi.JidiSequence;
 import justitone.jidi.JidiTrack;
+
+import javax.sound.midi.*;
 
 public class Midi {
     public Sequence jidiToMidi(JidiSequence jidi, float pitchBendRange) throws InvalidMidiDataException {

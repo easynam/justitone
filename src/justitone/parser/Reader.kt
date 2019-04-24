@@ -1,18 +1,5 @@
 package justitone.parser
 
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.function.Consumer
-import java.util.stream.Collectors
-import java.util.stream.Stream
-
-import org.antlr.v4.runtime.CharStream
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.TokenStream
-import org.apache.commons.math3.fraction.BigFraction
-
 import justitone.Event
 import justitone.Event.SubSequence
 import justitone.Sequence
@@ -22,6 +9,11 @@ import justitone.antlr.JIBaseVisitor
 import justitone.antlr.JILexer
 import justitone.antlr.JIParser
 import justitone.antlr.JIParser.EventContext
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
+import org.apache.commons.math3.fraction.BigFraction
+import java.util.*
 
 class Reader {
     internal val songVisitor = SongVisitor()

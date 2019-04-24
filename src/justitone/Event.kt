@@ -1,8 +1,7 @@
 package justitone
 
-import java.util.ArrayList
-
 import org.apache.commons.math3.fraction.BigFraction
+import java.util.*
 
 abstract class Event {
     val tokens: MutableList<TokenPos> = ArrayList()

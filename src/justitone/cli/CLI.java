@@ -1,17 +1,16 @@
 package justitone.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
-
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
-
 import justitone.Song;
 import justitone.jidi.JidiSequence;
 import justitone.midi.Midi;
 import justitone.parser.Reader;
+
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class CLI {
     public static void main(String args[]) throws InvalidMidiDataException, IOException {

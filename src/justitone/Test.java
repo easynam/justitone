@@ -1,16 +1,15 @@
 package justitone;
 
-import java.io.File;
-import java.io.IOException;
+import justitone.jidi.JidiSequence;
+import justitone.midi.Midi;
+import justitone.parser.Reader;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 import javax.sound.sampled.LineUnavailableException;
-
-import justitone.jidi.JidiSequence;
-import justitone.midi.Midi;
-import justitone.parser.Reader;
+import java.io.File;
+import java.io.IOException;
 
 public class Test {
     public static void main(String[] args) throws LineUnavailableException, InvalidMidiDataException, IOException {

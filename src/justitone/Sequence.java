@@ -1,10 +1,10 @@
 package justitone;
 
+import org.apache.commons.math3.fraction.BigFraction;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.math3.fraction.BigFraction;
 
 public class Sequence {
     public List<Event> events;

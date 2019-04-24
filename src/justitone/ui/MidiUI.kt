@@ -1,38 +1,24 @@
 package justitone.ui
 
+import justitone.TokenPos
+import justitone.audio.Message
+import justitone.audio.Playback
+import justitone.jidi.JidiEvent
+import justitone.jidi.JidiSequence
+import justitone.midi.Midi
+import justitone.parser.Reader
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Font
 import java.io.File
-import java.util.ArrayList
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.MidiUnavailableException
-import javax.sound.midi.Sequence
-import javax.sound.midi.Sequencer
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
-import javax.swing.JToolBar
-import javax.swing.ScrollPaneConstants
+import javax.swing.*
 import javax.swing.text.BadLocationException
 import javax.swing.text.DefaultHighlighter
 import javax.swing.text.Highlighter
-import javax.swing.text.Highlighter.HighlightPainter
-
-import justitone.audio.*
-import justitone.Song
-import justitone.TokenPos
-import justitone.jidi.JidiEvent
-import justitone.jidi.JidiSequence
-import justitone.jidi.JidiTrack
-import justitone.midi.Midi
-import justitone.parser.Reader
 
 
 class MidiUI(reader: Reader) : JPanel() {

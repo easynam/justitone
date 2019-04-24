@@ -1,17 +1,14 @@
 package justitone.audio
 
+import justitone.jidi.JidiEvent
+import justitone.jidi.JidiSequence
 import java.nio.ByteBuffer
-
+import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.LineUnavailableException
 import javax.sound.sampled.SourceDataLine
-import java.util.Optional
-import java.util.concurrent.ConcurrentLinkedQueue
-
-import justitone.jidi.JidiSequence
-import justitone.jidi.JidiTrack
-import justitone.jidi.JidiEvent
 
 class Playback(internal var queue: ConcurrentLinkedQueue<Message>) : Runnable {
 

@@ -1,12 +1,9 @@
 package justitone.jidi
 
-import java.util.stream.Collectors
-
-import org.apache.commons.math3.fraction.BigFraction
-
 import justitone.Event
 import justitone.Sequence
 import justitone.Song
+import org.apache.commons.math3.fraction.BigFraction
 
 //java intonation digital interface
 class JidiSequence(song: Song, ppq: Int) {
