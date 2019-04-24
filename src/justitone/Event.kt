@@ -1,10 +1,12 @@
 package justitone
 
+import justitone.util.div
+import justitone.util.plus
 import org.apache.commons.math3.fraction.BigFraction
 import java.util.*
 
 abstract class Event {
-    val tokens: MutableList<TokenPos> = ArrayList()
+    val tokens: MutableList<TokenPos> = mutableListOf()
     open val ratio: BigFraction = BigFraction.ONE
     protected open val length: BigFraction = BigFraction.ONE
 
@@ -36,19 +38,19 @@ abstract class Event {
                      override val ratio: BigFraction = BigFraction.ONE,
                      override val sequence: Sequence) : SubSequence() {
         override fun eventLength(): BigFraction {
-            return length.divide(sequence.length())
+            return length / sequence.length()
         }
 
         override fun chop(toLength: BigFraction): SubSequence {
-            val newTupleLength = toLength.divide(length)
-            val innerLength = toLength.divide(eventLength())
+            val newTupleLength = toLength / length
+            val innerLength = toLength / eventLength()
             var total = BigFraction.ZERO
 
             val seq = Sequence()
 
             for (e in sequence.events) {
                 val start = total
-                total = total.add(e.length())
+                total += e.length()
 
                 if (total >= innerLength) {
                     seq.addEvent(e.chop(innerLength.subtract(start)))
@@ -71,7 +73,7 @@ abstract class Event {
         }
 
         override fun chop(toLength: BigFraction): SubSequence {
-            val innerLength = toLength.divide(eventLength())
+            val innerLength = toLength / eventLength()
 
             var total = BigFraction.ZERO
 
@@ -79,7 +81,7 @@ abstract class Event {
 
             for (e in sequence.events) {
                 val start = total
-                total = total.add(e.length())
+                total += e.length()
 
                 if (total >= innerLength) {
                     seq.addEvent(e.chop(innerLength.subtract(start)))
