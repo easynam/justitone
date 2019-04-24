@@ -9,6 +9,10 @@ import justitone.antlr.JIBaseVisitor
 import justitone.antlr.JILexer
 import justitone.antlr.JIParser
 import justitone.antlr.JIParser.EventContext
+import justitone.util.minus
+import justitone.util.over
+import justitone.util.plus
+import justitone.util.times
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
@@ -81,7 +85,7 @@ class Reader {
 
     internal inner class SequenceItemVisitor : JIBaseVisitor<(Sequence) -> Unit>() {
         override fun visitEventRepeat(ctx: JIParser.EventRepeatContext): (Sequence) -> Unit {
-            val repeats = if (ctx.repeats == null) 1 else ctx.repeats.accept(integerVisitor)
+            val repeats = ctx.repeats?.accept(integerVisitor) ?: 1
 
             val event = ctx.event().accept(eventVisitor)
 
@@ -94,8 +98,8 @@ class Reader {
         }
 
         override fun visitJump(ctx: JIParser.JumpContext): (Sequence) -> Unit {
-            val length = if (ctx.lengthMultiplier == null) BigFraction.ONE else ctx.lengthMultiplier.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.lengthMultiplier?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val repeats = if (ctx.times == null) 1 else ctx.times.accept(integerVisitor)
 
             return {
@@ -113,27 +117,27 @@ class Reader {
 
     internal inner class EventVisitor : JIBaseVisitor<Event>() {
         override fun visitEventNote(ctx: JIParser.EventNoteContext): Event {
-            val length = if (ctx.length == null) BigFraction.ONE else ctx.length.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.length?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
 
             return Event.Note(length, ratio).withTokenPos(tokenPos(ctx))
         }
 
         override fun visitEventRest(ctx: JIParser.EventRestContext): Event {
-            val length = if (ctx.length == null) BigFraction.ONE else ctx.length.accept(fractionVisitor)
+            val length = ctx.length?.accept(fractionVisitor) ?: BigFraction.ONE
 
             return Event.Rest(length).withTokenPos(tokenPos(ctx))
         }
 
         override fun visitEventHold(ctx: JIParser.EventHoldContext): Event {
-            val length = if (ctx.length == null) BigFraction.ONE else ctx.length.accept(fractionVisitor)
+            val length = ctx.length?.accept(fractionVisitor) ?: BigFraction.ONE
 
             return Event.Hold(length).withTokenPos(tokenPos(ctx))
         }
 
         override fun visitEventTuple(ctx: JIParser.EventTupleContext): Event {
-            val length = if (ctx.length == null) BigFraction.ONE else ctx.length.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.length?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
             val tuples = sequences
@@ -144,15 +148,12 @@ class Reader {
 
         override fun visitEventFill(ctx: JIParser.EventFillContext): Event {
             //this should go somewhere else at this point
-            val length = if (ctx.lengthMultiplier == null) BigFraction.ONE else ctx.lengthMultiplier.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.lengthMultiplier?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
 
-            val start = if (ctx.start == null) Sequence() else ctx.start.accept(sequenceVisitor)
-            val loop = ctx.loop.accept(sequenceVisitor)
+            val start = ctx.start?.accept(sequenceVisitor) ?: Sequence()
+            var loop = ctx.loop.accept(sequenceVisitor)
 
-            if (loop.length() == BigFraction.ZERO) {
-                throw RuntimeException("Empty loop in fill at " + ctx.loop.start.startIndex)
-            }
 
             if (start.length() >= length) {
                 return Event.Bar(sequence = start).chop(length)
@@ -161,16 +162,17 @@ class Reader {
             var total = start.length()
             val seq = Sequence()
 
-            println("CREATED SEQ------$seq")
-
             seq.addEvent(Event.Bar(sequence = start))
 
+            if (loop.length() == BigFraction.ZERO) {
+                loop = Sequence(Event.Rest())
+            }
             while (true) {
                 val prev = total
-                total = total.add(loop.length())
+                total += loop.length()
 
                 if (total >= length) {
-                    val toLength = length.subtract(prev)
+                    val toLength = length - prev
 
                     seq.addEvent(Event.Bar(sequence = loop).chop(toLength))
 
@@ -184,8 +186,8 @@ class Reader {
         }
 
         override fun visitEventBar(ctx: JIParser.EventBarContext): Event {
-            val length = if (ctx.lengthMultiplier == null) BigFraction.ONE else ctx.lengthMultiplier.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.lengthMultiplier?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
             val bars = sequences
@@ -195,8 +197,8 @@ class Reader {
         }
 
         override fun visitEventModGroup(ctx: JIParser.EventModGroupContext): Event {
-            val length = if (ctx.lengthMultiplier == null) BigFraction.ONE else ctx.lengthMultiplier.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.lengthMultiplier?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
             val sequences = ctx.polySequence().accept(polySequenceVisitor)
 
             val bars = sequences
@@ -216,7 +218,7 @@ class Reader {
             val events = ArrayList<SubSequence>()
 
             for (p in pitches) {
-                ratio = ratio.multiply(p)
+                ratio *= p
                 events.add(Event.Bar(BigFraction.ONE, ratio, Sequence(event)))
             }
 
@@ -236,8 +238,8 @@ class Reader {
         }
 
         override fun visitEventDef(ctx: JIParser.EventDefContext): Event {
-            val length = if (ctx.length == null) BigFraction.ONE else ctx.length.accept(fractionVisitor)
-            val ratio = if (ctx.pitch() == null) BigFraction.ONE else ctx.pitch().accept(pitchVisitor)
+            val length = ctx.length?.accept(fractionVisitor) ?: BigFraction.ONE
+            val ratio = ctx.pitch()?.accept(pitchVisitor) ?: BigFraction.ONE
 
             val identifier = ctx.identifier().text
 
@@ -279,9 +281,8 @@ class Reader {
         }
 
         override fun visitPitchMultiple(ctx: JIParser.PitchMultipleContext): BigFraction {
-            return ctx.pitch()
-                    .map { it.accept(pitchVisitor) }
-                    .reduce { obj, fraction -> obj.multiply(fraction) }
+            return ctx.pitch().map { it.accept(pitchVisitor) }
+                              .reduce { obj, fraction -> obj * fraction }
         }
 
         override fun visitPitchPower(ctx: JIParser.PitchPowerContext): BigFraction {
@@ -292,10 +293,10 @@ class Reader {
 
     internal inner class FractionVisitor : JIBaseVisitor<BigFraction>() {
         override fun visitFraction(ctx: JIParser.FractionContext): BigFraction {
-            val numerator = if (ctx.num == null) 1 else ctx.num.accept(integerVisitor)
-            val denominator = if (ctx.den == null) 1 else ctx.den.accept(integerVisitor)
+            val numerator = ctx.num?.accept(integerVisitor) ?: 1
+            val denominator = ctx.den?.accept(integerVisitor) ?: 1
 
-            return BigFraction(numerator, denominator)
+            return numerator over denominator
         }
     }
 

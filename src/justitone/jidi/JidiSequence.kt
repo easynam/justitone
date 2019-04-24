@@ -3,6 +3,8 @@ package justitone.jidi
 import justitone.Event
 import justitone.Sequence
 import justitone.Song
+import justitone.util.plus
+import justitone.util.times
 import org.apache.commons.math3.fraction.BigFraction
 
 //java intonation digital interface
@@ -43,7 +45,7 @@ class JidiSequence(song: Song, ppq: Int) {
         var currentPos = currentPos
         var noteOn = noteOn
 
-        track.add(JidiEvent.Instrument(currentPos.multiply(ppm).toInt().toLong(), state.instrument))
+        track.add(JidiEvent.Instrument((currentPos * ppm).toLong(), state.instrument))
 
         for (e in sequence.contents()) {
             val tick = currentPos.multiply(ppm).toLong()
@@ -91,14 +93,14 @@ class JidiSequence(song: Song, ppq: Int) {
                 is Event.Poly -> loadPoly(state, currentPos, noteOn, e.sequences, track)
             }
 
-            currentPos = currentPos.add(e.length().multiply(state.lengthMultiplier))
+            currentPos += e.length() * state.lengthMultiplier
         }
 
-        val tick = currentPos.multiply(ppm).toLong()
+        val tick = (currentPos * ppm).toLong()
 
         track.add(JidiEvent.Token(tick, emptyList()))
         if (noteOn) {
-            track.add(JidiEvent.NoteOff(currentPos.multiply(ppm).toInt().toLong()))
+            track.add(JidiEvent.NoteOff((currentPos * ppm).toLong()))
         }
     }
 
@@ -121,7 +123,7 @@ class JidiSequence(song: Song, ppq: Int) {
     }
 
     private data class State (val lengthMultiplier: BigFraction = BigFraction.ONE, val freqMultiplier: BigFraction = BigFraction.ONE, val instrument: Int = 0) {
-        fun multiplyLength(multiplier: BigFraction): State = copy(lengthMultiplier = lengthMultiplier.multiply(multiplier))
-        fun multiplyFreq(multiplier: BigFraction): State = copy(freqMultiplier = freqMultiplier.multiply(multiplier))
+        fun multiplyLength(multiplier: BigFraction): State = copy(lengthMultiplier = lengthMultiplier * multiplier)
+        fun multiplyFreq(multiplier: BigFraction): State = copy(freqMultiplier = freqMultiplier * multiplier)
     }
 }
