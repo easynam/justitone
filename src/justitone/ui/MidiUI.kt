@@ -115,8 +115,8 @@ class MidiUI(reader: Reader) : JPanel() {
             val event = sequence.tracks
                     .flatMap { t -> t.events.filter { it is JidiEvent.Token } }
                     .map { it as JidiEvent.Token }
-                    .filter { it.start() < cursorPos }
-                    .maxBy { it.start() }
+                    .filter { it.start < cursorPos }
+                    .maxBy { it.start }
 
             val tick = event?.tick ?: 0
 
