@@ -1,5 +1,6 @@
 package justitone
 
+import justitone.util.plus
 import org.apache.commons.math3.fraction.BigFraction
 import java.util.*
 
@@ -31,7 +32,7 @@ class Sequence {
 
     fun length(): BigFraction {
         return events.map { e -> e.length() }
-                .reduce { obj, fraction -> obj.add(fraction) } ?: BigFraction.ZERO
+                .fold(BigFraction.ZERO) { obj, fraction -> obj + fraction }
     }
 
     fun contents(): List<Event> {

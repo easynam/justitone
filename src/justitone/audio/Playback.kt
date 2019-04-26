@@ -12,7 +12,7 @@ import javax.sound.sampled.SourceDataLine
 
 class Playback(internal var queue: ConcurrentLinkedQueue<Message>) : Runnable {
 
-    var sequence: JidiSequence? = null
+    var sequence: JidiSequence = JidiSequence()
         internal set
     var isRunning = true
         internal set
@@ -50,49 +50,55 @@ class Playback(internal var queue: ConcurrentLinkedQueue<Message>) : Runnable {
 
             // fill buffer with samples
             if (isPlaying) {
-                val length: Float = sequence!!.ppm.toFloat() * (sequence!!.bpm / 60f) * (bufSize.toFloat() / sampleRate) / 4f
-
-                if (sequence != null) {
-                    for (track in sequence!!.tracks) {
-                        for ((e, event) in track.events.withIndex()) {
-                            if (event is JidiEvent.Pitch) {
-                                val start = ticksToSeconds(event.tick.toFloat() - tick.toFloat() - offset, sequence!!.bpm.toFloat(), sequence!!.ppm.toFloat())
-                                val end: Float
-
-                                val nextEvent = nextNoteEvent(track.events, e + 1)
-
-                                if (nextEvent.isPresent) {
-                                    end = ticksToSeconds(nextEvent.get().tick.toFloat() - tick.toFloat() - offset, sequence!!.bpm.toFloat(), sequence!!.ppm.toFloat())
-                                } else {
-                                    end = ticksToSeconds(length, sequence!!.bpm.toFloat(), sequence!!.ppm.toFloat())
-                                }
-
-                                val startSample = Math.max(0, Math.ceil((start * sampleRate).toDouble()).toInt())
-                                val endSample = Math.min(bufSize, Math.floor((end * sampleRate).toDouble()).toInt() + 1)
-
-                                for (i in startSample until endSample) {
-                                    val current = buf.getShort(i * 2)
-                                    val phase = 2f * Math.PI.toFloat() * event.freq * (i.toFloat() / sampleRate - start)
-                                    val value = (current + java.lang.Short.MAX_VALUE.toDouble() * 0.1 * Math.sin(phase.toDouble())).toShort()
-                                    buf.putShort(i * 2, value)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                val lengthWhole: Long = length.toLong()
-                val lengthFrac: Float = length - lengthWhole
-                val fracSum = offset + lengthFrac
-
-                tick += lengthWhole + fracSum.toLong()
-                offset = fracSum - fracSum.toLong()
+                putSequence(buf, sequence);
             }
 
             line.write(buf.array(), 0, bufSize * 2)
         }
 
         line.close()
+    }
+
+    private fun putSequence(buf: ByteBuffer, sequence: JidiSequence) {
+        val length: Float = sequence.ppm.toFloat() * (sequence.bpm / 60f) * (bufSize.toFloat() / sampleRate) / 4f
+
+        for (track in sequence.tracks) {
+            for ((e, event) in track.events.withIndex()) {
+                if (event is JidiEvent.Pitch) {
+                    val start = ticksToSeconds(event.tick.toFloat() - tick.toFloat() - offset, sequence.bpm.toFloat(), sequence.ppm.toFloat())
+
+                    val nextEvent = nextNoteEvent(track.events, e + 1)
+
+                    val end = if (nextEvent.isPresent) {
+                        ticksToSeconds(nextEvent.get().tick.toFloat() - tick.toFloat() - offset, sequence.bpm.toFloat(), sequence.ppm.toFloat())
+                    } else {
+                        ticksToSeconds(length, sequence.bpm.toFloat(), sequence.ppm.toFloat())
+                    }
+
+                    val startSample = Math.max(0, Math.ceil((start * sampleRate).toDouble()).toInt())
+                    val endSample = Math.min(bufSize, Math.floor((end * sampleRate).toDouble()).toInt() + 1)
+
+                    putSine(buf, startSample, endSample, event, start)
+                }
+            }
+        }
+
+        val lengthWhole: Long = length.toLong()
+        val lengthFrac: Float = length - lengthWhole
+        val fracSum = offset + lengthFrac
+
+        //todo more functional?
+        tick += lengthWhole + fracSum.toLong()
+        offset = fracSum - fracSum.toLong()
+    }
+
+    private fun putSine(buf: ByteBuffer, startSample: Int, endSample: Int, event: JidiEvent.Pitch, start: Float) {
+        for (i in startSample until endSample) {
+            val current = buf.getShort(i * 2)
+            val phase = 2f * Math.PI.toFloat() * event.freq * (i.toFloat() / sampleRate - start)
+            val value = (current + Short.MAX_VALUE.toDouble() * 0.1 * Math.sin(phase.toDouble())).toShort()
+            buf.putShort(i * 2, value)
+        }
     }
 
     //handle note on later when pitch and note on are both handled properly

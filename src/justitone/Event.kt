@@ -1,6 +1,7 @@
 package justitone
 
 import justitone.util.div
+import justitone.util.minus
 import justitone.util.plus
 import org.apache.commons.math3.fraction.BigFraction
 
@@ -19,7 +20,7 @@ abstract class Event {
     }
 
     open fun chop(toLength: BigFraction): SubSequence {
-        return Event.Bar(toLength.divide(length()), BigFraction.ONE, Sequence(this))
+        return Event.Bar(toLength / length(), BigFraction.ONE, Sequence(this))
     }
 
     abstract class SubSequence : Event() {
@@ -52,7 +53,7 @@ abstract class Event {
                 total += e.length()
 
                 if (total >= innerLength) {
-                    seq.addEvent(e.chop(innerLength.subtract(start)))
+                    seq.addEvent(e.chop(innerLength - start))
 
                     break
                 }

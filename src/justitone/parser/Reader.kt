@@ -274,7 +274,7 @@ class Reader {
 
         override fun visitPitchMultiple(ctx: JIParser.PitchMultipleContext): BigFraction {
             return ctx.pitch().map { it.accept(pitchVisitor) }
-                    .reduce { obj, fraction -> obj * fraction }
+                    .fold(BigFraction.ONE) { obj, fraction -> obj * fraction }
         }
 
         override fun visitPitchPower(ctx: JIParser.PitchPowerContext): BigFraction {
