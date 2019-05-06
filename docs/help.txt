@@ -1,0 +1,64 @@
+a song starts with a tempo, and then a bunch of events, eg.
+
+120: >0 >20 >36
+
+:5/4                    note, ratio
+                        :5 and :/4 work too (5/1 and 1/4)
+
+>0 >20 >36              note, keffies magic angle thing
+                        (these are unison, major second, major third)
+
+'5 '6 '7                note, superparticular ratio
+                        '5 = :5/4, '6 = :6/5 etc
+
+:5/4:11/10>30           multiply pitches
+
+:5/4+
+:5/4++                  multiply pitch by itself
+
+-:5/4                   reciprocal
+                        eg. -'5 = -:5/4 = :4/5
+
+1/2:5/4                 note with length modifier. this one takes half as long
+                        all events apart from modulations can have length modifiers
+
+- 2-                    hold. continues the previous step (and example with double length)
+
+_ 2_                    rest (and example with double length)
+
+^:5/4                   modulate. doesnt play a note, but following notes within the group
+                        have their pitches multiplied.
+
+{>0 >20 >36}            group/bar/whatever. on its own, groups some events??
+1/2{_ _ _}              group with length modifier, halfs length of each note it contains
+:1/2{_ _ _}             group with pitch modifier, halfs pitch of each note it contains
+1/2:1/2{_ _ _}          and both
+
+[_ _ _]                 tuple, a group with a fixed length. events inside are spaced to
+                        fill the tuple's total length
+3/2[>0 >20 >36 >45]     this tuple has total length 3/2 and plays 4 notes evenly in that time
+
+[_ _ [_ _ _]]           the third beat in this is a triplet wow
+
+{line1, line2}          polyphony will play both lines at once
+
+{
+  line1,
+  line2,
+  line3
+}                       if you do it like this its like sheet music
+
+[line1, line2]          also works with tuples
+
+.:1.'6.'5               chord. stacks intervals on top of eachother, so they are specified relative to the previous.
+1/2:5/4.:1.'6.'5        you can change the root and length, wow
+[:1 :2 :3].:1.'6.'5     multiply the chord by everything in the group bc ?????????
+                        u can do planing like this
+
+>0*2
+[_ _ _]*2               repeat an event 2 times
+
+<                       repeats everything before it in the current group
+<2                      2 times
+1/2<2                   twice as fast each time
+1/2:5/4<2               and going up a major third each repetition
