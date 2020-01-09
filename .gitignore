@@ -16,6 +16,9 @@ target
 *.antlr
 input.txt
 
+.gradle
+build/
+
 midifile.mid
 
 # User-specific stuff

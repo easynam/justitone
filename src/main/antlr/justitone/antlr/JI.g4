@@ -35,7 +35,7 @@ pitch: MINUS? COLON ratio=fraction         #pitchRatio
      | pitch pitch+                        #pitchMultiple
      | pitch PLUS+                         #pitchPower
      ;
-     
+
 event: (length=fraction)? pitch  #eventNote
      | (length=fraction) pitch?  #eventNote
      | (length=fraction)? REST   #eventRest
@@ -52,11 +52,11 @@ event: (length=fraction)? pitch  #eventNote
      ;
 
 polySequence: sequence (COMMA sequence)*;
-     
+
 sequenceItem: event (REPEAT repeats=integer)?                     #eventRepeat
 	        | (lengthMultiplier=fraction)? pitch? JUMP (times=integer)?  #jump
 	        ;
-     
+
 sequence: WS* (sequenceItem WS+)* sequenceItem? WS*;
 
 song: (def WS+)* tempo=integer COLON WS* sequence EOF;

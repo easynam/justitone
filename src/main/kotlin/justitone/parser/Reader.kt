@@ -9,10 +9,7 @@ import justitone.antlr.JIBaseVisitor
 import justitone.antlr.JILexer
 import justitone.antlr.JIParser
 import justitone.antlr.JIParser.EventContext
-import justitone.util.minus
-import justitone.util.over
-import justitone.util.plus
-import justitone.util.times
+import justitone.util.*
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
