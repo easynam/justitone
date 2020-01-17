@@ -1,7 +1,8 @@
 package justitone.jidi
 
-class JidiTrack(var id: Int) {
-    var events: MutableList<JidiEvent> = mutableListOf()
-
+data class JidiTrack(
+        val id: Int,
+        val events: MutableList<JidiEvent> = mutableListOf(),
+        val periods: Periods = Periods()) {
     fun add(e: JidiEvent) = events.add(e)
 }

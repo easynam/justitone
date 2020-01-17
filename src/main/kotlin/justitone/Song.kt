@@ -1,3 +1,3 @@
 package justitone
 
-data class Song(val sequence: Sequence, val bpm: Int)
+data class Song(val event: Event, val bpm: Int)

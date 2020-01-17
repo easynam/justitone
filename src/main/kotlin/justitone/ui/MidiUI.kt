@@ -5,6 +5,7 @@ import justitone.audio.Message
 import justitone.audio.Playback
 import justitone.jidi.JidiEvent
 import justitone.jidi.JidiSequence
+import justitone.jidi.JidiTrack
 import justitone.midi.Midi
 import justitone.parser.Reader
 import java.awt.BorderLayout
@@ -19,6 +20,7 @@ import javax.swing.*
 import javax.swing.text.BadLocationException
 import javax.swing.text.DefaultHighlighter
 import javax.swing.text.Highlighter
+import kotlin.collections.HashSet
 
 
 class MidiUI(reader: Reader) : JPanel() {
@@ -35,7 +37,7 @@ class MidiUI(reader: Reader) : JPanel() {
 
         Thread(playback).start()
 
-        textArea = JTextArea("(def m3 '6) (def p5 '3) 120: [:1 m3 p5]")
+        textArea = JTextArea("120: /4[:1 '3 :1, '5 '6 '5]")
         textArea.font = Font("monospaced", Font.PLAIN, 12)
 
         val scroll = JScrollPane(textArea)
@@ -189,11 +191,13 @@ class MidiUI(reader: Reader) : JPanel() {
         Thread(watchAudio).start()
     }
 
-    private fun setHighlights(highlighter: Highlighter, tick: Long, jidiSeq: JidiSequence?) {
+    private fun setHighlights(highlighter: Highlighter, tick: Long, jidiSeq: JidiSequence) {
         val tokens = ArrayList<TokenPos>()
 
-        for (track in jidiSeq!!.tracks) {
-            var last = emptyList<TokenPos>()
+        for (track in jidiSeq.tracks) {
+            var last = emptySet<TokenPos>()
+
+//            println("a track")
 
             for (event in track.events) {
                 if (event.tick <= tick) {
@@ -207,6 +211,7 @@ class MidiUI(reader: Reader) : JPanel() {
 
             tokens.addAll(last)
         }
+//        println("done")
 
         highlights.forEach { h -> highlighter.removeHighlight(h) }
 

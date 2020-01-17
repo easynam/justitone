@@ -14,7 +14,7 @@ class Periods {
 
         val period = start..end
 
-        return periods.all { !overlaps(period, it) }
+        return periods.none { !overlaps(period, it) }
     }
 
     private fun overlaps(period1: ClosedRange<BigFraction>, period2: ClosedRange<BigFraction>): Boolean {

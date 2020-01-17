@@ -35,7 +35,7 @@ public class CLI {
 
         Song song = reader.parse(source);
 
-        if (song.getSequence().getEvents().isEmpty()) System.exit(1);
+//        if (song.getE().getEvents().isEmpty()) System.exit(1);
 
         JidiSequence seq = new JidiSequence(song, 768);
 

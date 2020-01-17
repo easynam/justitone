@@ -1,110 +1,75 @@
 package justitone
 
-import justitone.util.div
-import justitone.util.minus
-import justitone.util.plus
+import justitone.util.*
 import org.apache.commons.math3.fraction.BigFraction
 
 abstract class Event {
-    val tokens: MutableList<TokenPos> = mutableListOf()
-    open val ratio: BigFraction = BigFraction.ONE
-    protected open val length: BigFraction = BigFraction.ONE
+    abstract val tokens: Set<TokenPos>
 
-    fun withTokenPos(token: TokenPos): Event {
-        tokens.add(token)
-        return this
-    }
+    abstract fun length(): BigFraction
 
-    open fun length(): BigFraction {
-        return length
-    }
+    abstract fun multiply(other: Event): Event
 
-    open fun chop(toLength: BigFraction): SubSequence {
-        return Event.Bar(toLength / length(), BigFraction.ONE, Sequence(this))
-    }
-
-    abstract class SubSequence : Event() {
-        abstract val sequence: Sequence
-        abstract fun eventLength(): BigFraction
-    }
-
-    data class Note(override val length: BigFraction = BigFraction.ONE, override val ratio: BigFraction = BigFraction.ONE) : Event()
-    data class Rest(override val length: BigFraction = BigFraction.ONE) : Event()
-    data class Hold(override val length: BigFraction = BigFraction.ONE) : Event()
-    data class Modulation(override val ratio: BigFraction) : Event()
-    data class Instrument(val instrument: Int) : Event()
-
-    data class Tuple(override val length: BigFraction = BigFraction.ONE,
-                     override val ratio: BigFraction = BigFraction.ONE,
-                     override val sequence: Sequence) : SubSequence() {
-        override fun eventLength(): BigFraction {
-            return length / sequence.length()
-        }
-
-        override fun chop(toLength: BigFraction): SubSequence {
-            val newTupleLength = toLength / length
-            val innerLength = toLength / eventLength()
-            var total = BigFraction.ZERO
-
-            val seq = Sequence()
-
-            for (e in sequence.events) {
-                val start = total
-                total += e.length()
-
-                if (total >= innerLength) {
-                    seq.addEvent(e.chop(innerLength - start))
-
-                    break
-                }
-
-                seq.addEvent(e)
-            }
-
-            return Tuple(newTupleLength, ratio, seq)
-        }
-    }
-
-    data class Bar(val eventLength: BigFraction = BigFraction.ONE,
-                   override val ratio: BigFraction = BigFraction.ONE,
-                   override val sequence: Sequence) : SubSequence() {
-        override fun eventLength(): BigFraction {
-            return eventLength
-        }
-
-        override fun chop(toLength: BigFraction): SubSequence {
-            val innerLength = toLength / eventLength()
-
-            var total = BigFraction.ZERO
-
-            val seq = Sequence()
-
-            for (e in sequence.events) {
-                val start = total
-                total += e.length()
-
-                if (total >= innerLength) {
-                    seq.addEvent(e.chop(innerLength.subtract(start)))
-
-                    break
-                }
-
-                seq.addEvent(e)
-            }
-
-            return Bar(eventLength, ratio, seq)
-        }
-    }
-
-    data class Poly(override val ratio: BigFraction, val sequences: List<SubSequence>) : Event() {
+    data class PolyGroup(
+            override val tokens: Set<TokenPos> = emptySet(),
+            val children: List<Group> = emptyList()
+    ) : Event() {
         override fun length(): BigFraction {
-            return sequences.map { it.length() }.max() ?: BigFraction.ZERO
+            return children
+                    .map(Event::length)
+                    .max() ?: BigFraction.ZERO
         }
 
-        override fun chop(toLength: BigFraction): SubSequence {
-            val seqs = sequences.map { s -> s.chop(toLength) }
+        override fun multiply(other: Event): PolyGroup {
+            return copy(
+                    tokens = this.tokens union other.tokens,
+                    children = children.map { e -> e.multiply(other) })
+        }
+    }
 
-            return Bar(sequence = Sequence(Poly(BigFraction.ONE, seqs)))
+    data class Group (
+            override val tokens: Set<TokenPos> = emptySet(),
+            val children: List<Event> = emptyList()
+    ) : Event() {
+        override fun length(): BigFraction {
+            return children
+                    .map(Event::length)
+                    .fold(BigFraction.ZERO, BigFraction::plus)
+        }
+
+        override fun multiply(other: Event): Group {
+            return Group(
+                    tokens = this.tokens union other.tokens,
+                    children = children.map { e -> e.multiply(other) }
+            )
+        }
+    }
+
+    data class Leaf (
+            override val tokens: Set<TokenPos> = emptySet(),
+            val length: BigFraction = BigFraction.ONE,
+            val ratio: BigFraction = BigFraction.ONE,
+            val octaves: BigFraction = BigFraction.ZERO,
+            val noteOn: Boolean = true
+    ) : Event() {
+        private fun multiplyLeaf(other: Leaf): Event {
+            return Leaf(
+                    tokens = this.tokens union other.tokens,
+                    length = length * other.length,
+                    ratio = ratio * other.ratio,
+                    octaves = octaves + other.octaves,
+                    noteOn = noteOn && other.noteOn
+            )
+        }
+
+        override fun length(): BigFraction = length
+
+        override fun multiply(other: Event): Event {
+            return if (other is Leaf) {
+                multiplyLeaf(other)
+            } else {
+                return other.multiply(this)
+            }
         }
     }
 }

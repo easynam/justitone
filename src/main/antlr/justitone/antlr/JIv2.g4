@@ -19,15 +19,14 @@ integer: DIGIT+;
 fraction: num=integer (DIVIDE den=integer)?
         | DIVIDE den=integer;
 
-pitch: MINUS? COLON ratio=fraction         #pitchRatio
-     | MINUS? SUPER integer                #pitchSuperparticular
-     | pitch pitch+                        #pitchMultiple
-     | pitch PLUS+                         #pitchPower
+pitch: MINUS? COLON ratio=fraction         # pitchRatio
+     | MINUS? SUPER integer                # pitchSuperparticular
      ;
 
-event: pitch                               #eventPitch
-     | fraction                            #eventDuration
-     | OPEN_GROUP polyGroup CLOSE_GROUP    #eventGroup
+event: pitch                               # eventPitch
+     | fraction                            # eventDuration
+     | OPEN_GROUP polyGroup CLOSE_GROUP    # eventGroup
+     | event event                         # eventMultiplied
      ;
 
 polyGroup: group (COMMA group)*;
