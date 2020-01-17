@@ -51,12 +51,16 @@ class JidiSequence(song: Song = Song(Event.Group(), 120), ppq: Int = 768) {
                     track.add(JidiEvent.NoteOff(tick))
                 }
 
-                val freq = e.ratio.toFloat() * 440f
+                if (e.ratio == BigFraction.ZERO) {
+                    state.advancePos(e.length())
+                } else {
+                    val freq = e.ratio.toFloat() * 440f
 
-                track.add(JidiEvent.Pitch(tick, freq))
-                track.add(JidiEvent.NoteOn(tick))
+                    track.add(JidiEvent.Pitch(tick, freq))
+                    track.add(JidiEvent.NoteOn(tick))
 
-                state.copy(noteOn = true).advancePos(e.length())
+                    state.copy(noteOn = true).advancePos(e.length())
+                }
             }
             is Event.Group -> {
                 if (state.noteOn) {
