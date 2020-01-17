@@ -37,7 +37,7 @@ class MidiUI(reader: Reader) : JPanel() {
 
         Thread(playback).start()
 
-        textArea = JTextArea("120: /4[:1 '3 :1, '5 '6 '5]")
+        textArea = JTextArea("120: /4[[:1 '3 :1, '5 '6 '5] ['6, '3][:1 :2 :3] /8[:1 :2 :1 :2 :1 :2 :1 :2]['6, '3][:1 :2 :3]]")
         textArea.font = Font("monospaced", Font.PLAIN, 12)
 
         val scroll = JScrollPane(textArea)

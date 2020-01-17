@@ -8,7 +8,7 @@ import org.apache.commons.math3.fraction.BigFraction
 import java.lang.RuntimeException
 
 //java intonation digital interface
-class JidiSequence(song: Song = Song(Event.Group(), 123), ppq: Int = 768) {
+class JidiSequence(song: Song = Song(Event.Group(), 120), ppq: Int = 768) {
     var tracks: MutableList<JidiTrack> = mutableListOf()
     private val used: MutableMap<JidiTrack, Periods> = mutableMapOf()
 
@@ -16,8 +16,6 @@ class JidiSequence(song: Song = Song(Event.Group(), 123), ppq: Int = 768) {
     val bpm: Int = song.bpm;
 
     init {
-        println("loading")
-
         val track = allocateTrack(BigFraction.ZERO, song.event.length())
 
         loadEvent(State(), song.event, track)
@@ -32,8 +30,6 @@ class JidiSequence(song: Song = Song(Event.Group(), 123), ppq: Int = 768) {
 
             track
         } else {
-            println("new track!")
-
             val newTrack = JidiTrack(tracks.size)
             newTrack.periods.allocate(start, end)
             tracks.add(newTrack)
