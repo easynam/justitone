@@ -119,6 +119,10 @@ class Reader {
 
             return invert(BigFraction(numerator, numerator - 1), invert)
         }
+
+        override fun visitPitchZero(ctx: JIv2Parser.PitchZeroContext): BigFraction {
+            return BigFraction.ZERO
+        }
     }
 
     internal inner class FractionVisitor : JIv2BaseVisitor<BigFraction>() {

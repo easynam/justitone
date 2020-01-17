@@ -21,6 +21,7 @@ fraction: num=integer (DIVIDE den=integer)?
 
 pitch: MINUS? COLON ratio=fraction         # pitchRatio
      | MINUS? SUPER integer                # pitchSuperparticular
+     | REST                                # pitchZero
      ;
 
 event: pitch                               # eventPitch
