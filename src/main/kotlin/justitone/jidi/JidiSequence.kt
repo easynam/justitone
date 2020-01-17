@@ -6,6 +6,7 @@ import justitone.util.plus
 import justitone.util.times
 import org.apache.commons.math3.fraction.BigFraction
 import java.lang.RuntimeException
+import kotlin.math.pow
 
 //java intonation digital interface
 class JidiSequence(song: Song = Song(Event.Group(), 120), ppq: Int = 768) {
@@ -54,7 +55,7 @@ class JidiSequence(song: Song = Song(Event.Group(), 120), ppq: Int = 768) {
                 if (e.ratio == BigFraction.ZERO) {
                     state.advancePos(e.length())
                 } else {
-                    val freq = e.ratio.toFloat() * 440f
+                    val freq = e.ratio.toFloat() * 440f * 2f.pow(e.octaves.toFloat())
 
                     track.add(JidiEvent.Pitch(tick, freq))
                     track.add(JidiEvent.NoteOn(tick))

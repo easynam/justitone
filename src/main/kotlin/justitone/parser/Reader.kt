@@ -92,36 +92,38 @@ class Reader {
                     .map { it.accept(eventVisitor) }
                     .reduce { first, second -> second.multiply(first) }
         }
+
+        override fun visitEventOctave(ctx: JIv2Parser.EventOctaveContext): Event {
+            val octaves = ctx.fraction().accept(fractionVisitor)
+
+            return Event.Leaf(
+                    tokens = setOf(tokenPos(ctx)),
+                    octaves = octaves
+            )
+        }
     }
 
     internal inner class PitchVisitor : JIv2BaseVisitor<BigFraction>() {
-        private fun invert(ratio: BigFraction, shouldInvert: Boolean): BigFraction {
-            return if (shouldInvert) {
-                ratio.reciprocal()
-            } else {
-                ratio
-            }
-        }
-
         override fun visitPitchRatio(ctx: JIv2Parser.PitchRatioContext): BigFraction {
-            val invert = ctx.MINUS() != null
-
-            return invert(ctx.ratio.accept(fractionVisitor), invert)
+            return ctx.ratio.accept(fractionVisitor)
         }
 
         override fun visitPitchSuperparticular(ctx: JIv2Parser.PitchSuperparticularContext): BigFraction {
             val numerator = ctx.integer().accept(integerVisitor)
-            val invert = ctx.MINUS() != null
 
             if (numerator <= 1) {
                 throw RuntimeException("Superparticular numerator can't be less than 1")
             }
 
-            return invert(BigFraction(numerator, numerator - 1), invert)
+            return numerator over (numerator - 1)
         }
 
         override fun visitPitchZero(ctx: JIv2Parser.PitchZeroContext): BigFraction {
             return BigFraction.ZERO
+        }
+
+        override fun visitPitchReciprocal(ctx: JIv2Parser.PitchReciprocalContext): BigFraction {
+            return ctx.pitch().accept(pitchVisitor).reciprocal()
         }
     }
 

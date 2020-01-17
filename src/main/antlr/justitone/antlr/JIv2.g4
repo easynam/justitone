@@ -13,18 +13,21 @@ CLOSE_GROUP: ']';
 PLUS: '+';
 COLON: ':';
 COMMA: ',';
+OCTAVE: '^';
 
 integer: DIGIT+;
 
 fraction: num=integer (DIVIDE den=integer)?
         | DIVIDE den=integer;
 
-pitch: MINUS? COLON ratio=fraction         # pitchRatio
-     | MINUS? SUPER integer                # pitchSuperparticular
+pitch: COLON ratio=fraction                # pitchRatio
+     | SUPER integer                       # pitchSuperparticular
+     | MINUS pitch                         # pitchReciprocal
      | REST                                # pitchZero
      ;
 
 event: pitch                               # eventPitch
+     | OCTAVE fraction                     # eventOctave
      | fraction                            # eventDuration
      | OPEN_GROUP polyGroup CLOSE_GROUP    # eventGroup
      | event event                         # eventMultiplied
